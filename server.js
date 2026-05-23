@@ -11,7 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SENHA_ACESSO = process.env.DASHBOARD_PASSWORD || 'kelevra2026';
 
+// Middleware
 app.use(express.json());
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
 // Rota Principal - Landing Page Institucional Kelevra Corp
@@ -484,7 +486,7 @@ app.get('/app', (req, res) => {
 
         <div class="sidebar">
             <div class="user-profile">
-                <div class="avatar">G</div>
+                <img src="/profile.jpg" class="avatar" style="object-fit: cover; border: 2px solid #3b82f6;" />
                 <div>
                     <h2>Gabriela</h2>
                     <p>Head Operacional</p>
@@ -603,10 +605,22 @@ app.get('/app', (req, res) => {
                 }
             }
 
-            // Limpa dados corrompidos do LocalStorage automaticamente
+            // Limpa dados corrompidos do LocalStorage automaticamente e previne SecurityErrors
             function safeGetStorage(key) {
-                try { return JSON.parse(localStorage.getItem(key)) || []; }
-                catch(e) { localStorage.removeItem(key); return []; }
+                try { 
+                    const data = localStorage.getItem(key);
+                    if (!data) return [];
+                    return JSON.parse(data) || []; 
+                } catch(e) { 
+                    console.error("Storage error:", e);
+                    try { localStorage.removeItem(key); } catch(err) {} 
+                    return []; 
+                }
+            }
+            
+            function safeSetStorage(key, value) {
+                try { localStorage.setItem(key, JSON.stringify(value)); } 
+                catch(e) { console.error("Falha ao salvar no storage:", e); }
             }
 
             // Chat Functionality
@@ -660,7 +674,7 @@ app.get('/app', (req, res) => {
                     let currentHistory = [];
                     if (!isContextOtimizador) {
                         chatHistory.push({ role: 'user', parts: [{ text: text }] });
-                        localStorage.setItem('deboraChatHistory', JSON.stringify(chatHistory));
+                        safeSetStorage('deboraChatHistory', chatHistory);
                         // Envia apenas as últimas 40 mensagens para poupar tokens
                         currentHistory = chatHistory.slice(-40);
                     }
@@ -693,7 +707,7 @@ app.get('/app', (req, res) => {
                         finalReply = finalReply.replace(taskRegex, '').trim();
 
                         chatHistory.push({ role: 'model', parts: [{ text: finalReply }] });
-                        localStorage.setItem('deboraChatHistory', JSON.stringify(chatHistory));
+                        safeSetStorage('deboraChatHistory', chatHistory);
                         
                         const replyDiv = document.createElement('div');
                         replyDiv.className = 'message msg-debora';
@@ -744,7 +758,7 @@ app.get('/app', (req, res) => {
             const taskListContainer = document.getElementById('taskListContainer');
 
             function saveTasks() {
-                localStorage.setItem('deboraTasks', JSON.stringify(tasksArray));
+                safeSetStorage('deboraTasks', tasksArray);
             }
 
             function addTaskToManager(title, desc) {

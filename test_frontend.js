@@ -4,8 +4,14 @@
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 
-                document.getElementById('tab-' + tabId).classList.add('active');
-                event.currentTarget.classList.add('active');
+                const tabEl = document.getElementById('tab-' + tabId);
+                if (tabEl) tabEl.classList.add('active');
+
+                // Marca o nav-item correto sem depender do event global
+                const navItems = document.querySelectorAll('.nav-item');
+                const tabLabels = ['chat', 'otimizador', 'varredura', 'tarefas'];
+                const idx = tabLabels.indexOf(tabId);
+                if (idx !== -1 && navItems[idx]) navItems[idx].classList.add('active');
 
                 const headerTitle = document.querySelector('.header h1');
                 const headerDesc = document.querySelector('.header p');
@@ -26,28 +32,40 @@
                 }
             }
 
+            // Limpa dados corrompidos do LocalStorage automaticamente
+            function safeGetStorage(key) {
+                try { return JSON.parse(localStorage.getItem(key)) || []; }
+                catch(e) { localStorage.removeItem(key); return []; }
+            }
+
             // Chat Functionality
             const chatMessages = document.getElementById('chatMessages');
             const chatInput = document.getElementById('chatInput');
             const btnSendChat = document.getElementById('btnSendChat');
             const chatTyping = document.getElementById('chatTyping');
-            let chatHistory = JSON.parse(localStorage.getItem('deboraChatHistory')) || [];
+            
+            let chatHistory = safeGetStorage('deboraChatHistory');
 
             // Renderiza histórico inicial
             function renderInitialHistory() {
-                if (chatHistory.length > 0) {
-                    chatHistory.forEach(msg => {
-                        const div = document.createElement('div');
-                        if (msg.role === 'user') {
-                            div.className = 'message msg-gabi';
-                            div.innerText = msg.parts[0].text;
-                        } else {
-                            div.className = 'message msg-debora';
-                            div.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(msg.parts[0].text);
-                        }
-                        chatMessages.appendChild(div);
-                    });
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                try {
+                    if (chatHistory.length > 0) {
+                        chatHistory.forEach(msg => {
+                            if (!msg || !msg.parts || !msg.parts[0] || !msg.parts[0].text) return; // Segurança
+                            const div = document.createElement('div');
+                            if (msg.role === 'user') {
+                                div.className = 'message msg-gabi';
+                                div.innerText = msg.parts[0].text;
+                            } else {
+                                div.className = 'message msg-debora';
+                                div.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(msg.parts[0].text);
+                            }
+                            chatMessages.appendChild(div);
+                        });
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                } catch(e) {
+                    console.error("Erro ao renderizar histórico", e);
                 }
             }
             // Chama no boot
@@ -151,7 +169,7 @@
             });
 
             // Task Manager Functionality
-            let tasksArray = JSON.parse(localStorage.getItem('deboraTasks')) || [];
+            let tasksArray = safeGetStorage('deboraTasks');
             const taskListContainer = document.getElementById('taskListContainer');
 
             function saveTasks() {
