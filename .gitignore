@@ -1,0 +1,10 @@
+# gmb-claw/.gitignore
+node_modules/
+.env
+.env.gemini
+tokens.json
+base_pdfs/
+dashboard_*.html
+*.log
+
+tokens.json*

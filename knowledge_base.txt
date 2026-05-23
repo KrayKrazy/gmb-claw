@@ -1,0 +1,77 @@
+=== BASE DE CONHECIMENTO GMB CLAW (ATUALIZAÇÕES 2025/2026) ===
+
+FONTE 1: Atualizações Recentes de Algoritmo (2025-2026)
+As atualizações do Perfil da Empresa no Google (antigo Google Meu Negócio) entre 2025 e 2026 focaram em transformar a plataforma de um simples cadastro informativo em um hub de decisão local inteligente, impulsionado por Inteligência Artificial (IA). O algoritmo de busca local passou a valorizar menos a simples "prominência" da marca e muito mais a "popularidade" baseada em interações reais: cliques no site, pedidos de rotas, mensagens recebidas e o engajamento geral com o conteúdo postado. Em 2026, a consistência é um fator de ranqueamento crítico. Perfis que ficam inativos por períodos superiores a 30 dias (sem novas fotos, posts ou atualizações) sofrem quedas acentuadas de visibilidade.
+
+FONTE 2: A Importância da IA na Gestão do Perfil
+O Google implementou ferramentas nativas (utilizando o Gemini) para auxiliar proprietários a responderem avaliações de clientes de forma mais ágil. Além disso, a IA agora digitaliza cardápios a partir de fotos ou PDFs enviados, formatando-os automaticamente para o perfil. Para agências e consultores, vender "cadastro de GMB" não funciona mais. O serviço agora é vender resultados reais baseados em otimização contínua de rotas, ligações e cliques. 
+
+FONTE 3: Otimização de SEO Local (Checklist)
+1. Título e Categoria: O nome da empresa deve ser o nome real. O Google endureceu as regras contra "keyword stuffing" (encher o nome de palavras-chave). Mudanças bruscas no nome ou categoria podem levar à suspensão imediata do perfil por fraude de identidade.
+2. Descrição: Deve focar em SEO, utilizando as palavras-chave principais do negócio nas primeiras linhas, com um CTA claro no final.
+3. Fotos: Fotos reais do ambiente, equipe e produtos. Imagens de banco de imagens ou altamente editadas perdem relevância no algoritmo visual do Google.
+4. Avaliações (Reviews): O tempo de resposta e a qualidade das interações pesam diretamente no SEO local. O ideal é responder em menos de 24 horas. Respostas devem ser personalizadas, repetindo o serviço prestado para ajudar no tagueamento de palavras-chave pelo algoritmo.
+
+FONTE 4: Centralização de Atendimento
+O Google ajustou as opções de contato em 2026, permitindo que as empresas selecionem uma plataforma principal (como WhatsApp, Messenger ou SMS) para centralizar o atendimento ao cliente, substituindo as funcionalidades antigas e pouco usadas de chat interno do próprio GMB. É obrigatório ter o botão de WhatsApp/Contato rápido bem configurado para aumentar a taxa de conversão do perfil.
+
+FONTE 5: Como responder a reviews negativos
+A regra fundamental de 2026 para reviews negativos é: não brigue com o cliente na ficha. A resposta não é para quem reclamou, é para os próximos 100 clientes que vão ler. Demonstre empatia, peça desculpas pela percepção negativa (mesmo se o cliente estiver errado), e direcione o problema para um canal de atendimento privado (ex: "Por favor, nos chame no WhatsApp [número] para resolvermos isso imediatamente").
+
+=== FONTE 6: RELATÓRIO 2026 - FATORES DE RANQUEAMENTO LOCAL (WHITESPARK) ===
+
+1. LOCAL PACK / MAPS (TOP IMPACT):
+   - Categoria Principal do GBP (Fator #1 absoluto).
+   - Proximidade do endereço ao ponto de busca.
+   - Palavras-chave no Título do GBP (ainda um dos maiores pesos).
+   - Endereço físico na cidade da busca.
+   - [NOVO 2026] Horário de Funcionamento: Estar "Aberto agora" no momento da busca subiu para a 5ª posição de impacto.
+   - Notas altas (4-5 estrelas) e quantidade de reviews nativos com texto.
+
+2. LOCAL ORGANIC (SEO NO SITE):
+   - Estrutura de Silos: Ter rotas ou subpáginas para cada serviço principal (ex: /geladeira) é o ideal para ranquear buscas específicas.
+   - Performance & Velocidade: Sites estáticos (Netlify, Cloudflare, Vite) são altamente valorizados por serem ultrarrápidos (fator de ranking essencial).
+   - Domínios: Priorizar domínios próprios (.com.br / .com). Subdomínios gratuitos (.netlify.app) devem ser vistos como fase de transição para autoridade de marca.
+   - Relevância geográfica (Cidade/Bairro) no conteúdo das tags H1/H2.
+
+3. VISIBILIDADE EM BUSCAS DE IA (ChatGPT, Gemini, AI Overviews):
+   - Presença em listas de "Melhores de..." curadas por especialistas (Expert-curated lists).
+   - Proeminência em domínios relevantes do setor (Diretórios de nicho).
+   - Autoridade de citações não estruturadas (Menções em jornais, blogs, sites gov).
+   - Citações são o "novo link" para o SEO de IA.
+   - Autoridade dos sites de terceiros onde os reviews estão presentes.
+
+4. FATORES DE CONVERSÃO (CLIQUE -> CLIENTE):
+   - Nota alta (4-5) é o fator #1 de decisão do cliente.
+   - Sentimento positivo no texto dos reviews.
+   - Proximidade (o cliente prefere quem está perto).
+   - Recência dos reviews (reviews antigos matam a conversão).
+
+5. MITOS DO SEO LOCAL (NÃO PERDER TEMPO):
+   - Geo-tagging de fotos (não tem impacto comprovado).
+   - Número de seguidores ou quantidade de posts em redes sociais.
+   - Comprimento da Title Tag (O Google usa títulos longos, o limite de 60 caracteres é estético, não de ranking).
+   - Palavras-chave nas respostas do proprietário aos reviews.
+
+6. FATORES NEGATIVOS E RISCO DE SUSPENSÃO:
+   - Categoria principal incorreta ou confusão de categorias (misturar nichos não relacionados).
+   - Keyword Stuffing agressivo no nome (alto risco de suspensão).
+   - Endereço em PO Box, escritórios virtuais ou endereços falsos.
+   - Presença de malware ou site hackeado.
+
+7. INSIGHTS DOS ESPECIALISTAS 2026:
+   - "Popular Times" (Horários de Pico): Se o local está mais movimentado que o normal em tempo real, ele tende a subir no ranking naquele momento.
+   - LSA (Local Services Ads): Fatores chave são Orçamento/Lance, Reviews (especialmente recência) e Tempo de Resposta.
+   - Conteúdo do Site: Deve ser conciso, factual e direto, focado em responder perguntas (utilizar ferramenta AlsoAsked).
+
+=== FONTE 8: IDENTIDADE E MISSÃO KELEVRA CORP ===
+
+1. O DNA Kelevra: Somos uma consultoria de elite em crescimento digital. Nosso trabalho não é "fazer cadastro", é Reestruturação de Autoridade Local.
+2. Estilo de Auditoria: Nossos laudos devem ser técnicos, mas sempre propositivos. Se algo está ruim, o tom deve ser: "Identificamos uma oportunidade de melhoria que a Kelevra pode implementar para te colocar no topo".
+3. Validação de Estratégias: 
+   - Landing Pages Estáticas (Netlify/Vite): São o nosso padrão ouro de performance. O agente deve SEMPRE elogiar a velocidade dessas páginas.
+   - Meta Ads -> WhatsApp: É a nossa estratégia recomendada para tração imediata. O agente deve citar que o WhatsApp é o "fechamento de ouro" do SEO Local.
+   - SEO de Guerrilha: Usamos técnicas agressivas mas seguras para dominar o Maps em 30 dias.
+
+=== FIM DA BASE DE CONHECIMENTO ===
+
