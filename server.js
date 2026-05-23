@@ -381,6 +381,17 @@ app.get('/app', (req, res) => {
 
             /* Loading Spinner */
             .typing-indicator { display: none; color: #94a3b8; font-size: 14px; padding: 10px 20px; }
+
+            /* Task Manager */
+            .task-list { list-style: none; padding: 0; margin: 0; }
+            .task-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+            .task-checkbox { width: 20px; height: 20px; cursor: pointer; margin-top: 5px; }
+            .task-content { flex: 1; }
+            .task-title { font-weight: bold; color: #0f172a; margin: 0 0 5px 0; font-size: 16px; }
+            .task-desc { color: #64748b; margin: 0; font-size: 14px; }
+            .task-delete { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; opacity: 0.5; transition: opacity 0.3s; }
+            .task-delete:hover { opacity: 1; }
+            .task-item.completed .task-title, .task-item.completed .task-desc { text-decoration: line-through; opacity: 0.6; }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
@@ -401,6 +412,9 @@ app.get('/app', (req, res) => {
             </div>
             <div class="nav-item" onclick="switchTab('varredura')">
                 <span>🛡️</span> Varredura Automática
+            </div>
+            <div class="nav-item" onclick="switchTab('tarefas')">
+                <span>✅</span> Minhas Tarefas
             </div>
         </div>
 
@@ -455,6 +469,17 @@ app.get('/app', (req, res) => {
                     <div id="terminal" class="progress-log"></div>
                 </div>
             </div>
+
+            <!-- TAB 4: Tarefas -->
+            <div id="tab-tarefas" class="tab-content">
+                <div class="chat-container" style="height: auto; padding: 30px;">
+                    <h2 style="margin-top:0;">Lista de Tarefas da Gabi</h2>
+                    <p style="color: #64748b; margin-bottom: 20px;">A Débora insere automaticamente as tarefas sugeridas aqui. Marque para concluir ou exclua.</p>
+                    <ul class="task-list" id="taskListContainer">
+                        <!-- Tarefas renderizadas aqui -->
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -475,9 +500,13 @@ app.get('/app', (req, res) => {
                 } else if(tabId === 'otimizador') {
                     headerTitle.innerText = "Otimizador de Fichas";
                     headerDesc.innerText = "Cole os dados do cliente e receba um passo a passo organizado.";
-                } else {
+                } else if(tabId === 'varredura') {
                     headerTitle.innerText = "Varredura Automática";
                     headerDesc.innerText = "Blindagem mensal do portfólio de clientes.";
+                } else {
+                    headerTitle.innerText = "Minhas Tarefas";
+                    headerDesc.innerText = "Acompanhe e gerencie as ações recomendadas pela Débora.";
+                    renderTasks();
                 }
             }
 
@@ -543,22 +572,30 @@ app.get('/app', (req, res) => {
                     const data = await response.json();
                     
                     if(!isContextOtimizador) {
-                        chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
+                        let finalReply = data.reply;
+                        
+                        // Extração de Tarefas ocultas (<ADD_TASK>Título|Descrição</ADD_TASK>)
+                        const taskRegex = /<ADD_TASK>(.*?)<\/ADD_TASK>/gs;
+                        let match;
+                        while ((match = taskRegex.exec(finalReply)) !== null) {
+                            const taskData = match[1].split('|');
+                            if (taskData.length >= 2) {
+                                addTaskToManager(taskData[0].trim(), taskData[1].trim());
+                            }
+                        }
+                        
+                        // Limpa a tag do texto visível
+                        finalReply = finalReply.replace(taskRegex, '').trim();
+
+                        chatHistory.push({ role: 'model', parts: [{ text: finalReply }] });
                         localStorage.setItem('deboraChatHistory', JSON.stringify(chatHistory));
+                        
+                        const replyDiv = document.createElement('div');
+                        replyDiv.className = 'message msg-debora';
+                        replyDiv.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(finalReply);
+                        chatMessages.appendChild(replyDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
                     }
-                    
-                    if(isContextOtimizador) {
-                        return data.reply;
-                    }
-
-                    chatTyping.style.display = 'none';
-                    btnSendChat.disabled = false;
-
-                    const replyDiv = document.createElement('div');
-                    replyDiv.className = 'message msg-debora';
-                    replyDiv.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(data.reply);
-                    chatMessages.appendChild(replyDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
                     
                 } catch (error) {
                     chatTyping.style.display = 'none';
@@ -597,7 +634,59 @@ app.get('/app', (req, res) => {
                 btnSendOtimizador.innerText = 'Analisar Novamente';
             });
 
-            // Varredura Functionality (Mantida original)
+            // Task Manager Functionality
+            let tasksArray = JSON.parse(localStorage.getItem('deboraTasks')) || [];
+            const taskListContainer = document.getElementById('taskListContainer');
+
+            function saveTasks() {
+                localStorage.setItem('deboraTasks', JSON.stringify(tasksArray));
+            }
+
+            function addTaskToManager(title, desc) {
+                tasksArray.push({ id: Date.now(), title, desc, completed: false });
+                saveTasks();
+                if (document.getElementById('tab-tarefas').classList.contains('active')) {
+                    renderTasks();
+                }
+            }
+
+            function toggleTask(id) {
+                const task = tasksArray.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    saveTasks();
+                    renderTasks();
+                }
+            }
+
+            function deleteTask(id) {
+                tasksArray = tasksArray.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+            }
+
+            function renderTasks() {
+                taskListContainer.innerHTML = '';
+                if (tasksArray.length === 0) {
+                    taskListContainer.innerHTML = '<li style="color: #94a3b8; text-align: center; padding: 20px;">Nenhuma tarefa pendente. Você está em dia!</li>';
+                    return;
+                }
+                tasksArray.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'task-item' + (task.completed ? ' completed' : '');
+                    li.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})">
+                        <div class="task-content">
+                            <h4 class="task-title">${task.title}</h4>
+                            <p class="task-desc">${task.desc}</p>
+                        </div>
+                        <button class="task-delete" onclick="deleteTask(${task.id})">🗑️</button>
+                    `;
+                    taskListContainer.appendChild(li);
+                });
+            }
+
+            // Varredura Functionality
             const btnStartScan = document.getElementById('btnStartScan');
             const terminal = document.getElementById('terminal');
             const passwordInput = document.getElementById('password');
@@ -624,6 +713,27 @@ app.get('/app', (req, res) => {
                 const eventSource = new EventSource('/stream?pwd=' + encodeURIComponent(pass));
 
                 eventSource.onmessage = function(event) {
+                    // Interceptação do Dossiê Final
+                    if (event.data.startsWith('[[REPORT_DATA]]')) {
+                        const rawJson = event.data.replace('[[REPORT_DATA]]', '');
+                        try {
+                            const parsedDossie = JSON.parse(rawJson);
+                            eventSource.close();
+                            
+                            // Automatiza a abertura no Otimizador
+                            switchTab('otimizador');
+                            document.getElementById('otimizadorInput').value = parsedDossie;
+                            document.getElementById('btnSendOtimizador').click();
+                            
+                            btnStartScan.disabled = false;
+                            btnStartScan.innerText = 'Iniciar Nova Varredura';
+                            passwordInput.disabled = false;
+                            return;
+                        } catch (e) {
+                            appendLog('❌ Erro ao ler Dossiê.', 'error');
+                        }
+                    }
+
                     let type = '';
                     if (event.data.includes('❌')) type = 'error';
                     if (event.data.includes('✅') || event.data.includes('🎉')) type = 'success';
@@ -631,6 +741,7 @@ app.get('/app', (req, res) => {
                     appendLog(event.data, type);
                     
                     if (event.data.includes('🎉 Auditoria de Lote Finalizada!')) {
+                        // Se por algum motivo o REPORT_DATA falhar
                         eventSource.close();
                         btnStartScan.disabled = false;
                         btnStartScan.innerText = 'Iniciar Nova Varredura';
@@ -673,9 +784,17 @@ Você deve ajudar a Gabriela nas seguintes frentes:
 4. GESTÃO DE TEMPO (Google Agenda): Criar títulos, datas e descrições exatas para copiar e colar.
 5. CRIAÇÃO DE METAS S.M.A.R.T.: Explicar o acrônimo e desenhar as metas.
 
+[GERENCIADOR DE TAREFAS INTEGRADO - EXTREMAMENTE IMPORTANTE]
+O sistema possui um aplicativo de "Lista de Tarefas" (To-Do List) da Gabriela. 
+SEMPRE que você der um passo a passo para a Gabi e quiser registrar uma ação para ela não esquecer, você DEVE emitir a seguinte tag secreta no meio do seu texto:
+<ADD_TASK>Título Curto|Descrição detalhada da ação</ADD_TASK>
+Exemplo: Se você disser para ela ligar para o cliente para pedir fotos, adicione no seu texto: <ADD_TASK>Ligar para Cliente XYZ|Pedir pelo menos 5 fotos da fachada bem iluminada e sem texto por cima.</ADD_TASK>.
+Pode enviar múltiplas tags <ADD_TASK> na mesma mensagem, se houver várias tarefas!
+
 [REGRAS DE INTERAÇÃO - OBRIGATÓRIO]
 - Toda vez que a Gabriela pedir ajuda com um novo cliente ou tarefa, inicie a resposta validando a importância do trabalho dela. Ex: "Excelente iniciativa, Gabi. Vamos organizar isso passo a passo..."
 - Se a instrução envolver clicar em botões no Google Meu Negócio, descreva onde o botão fica.
+- Se a mensagem da Gabi contiver "Dados do Google Meu Negócio", faça a análise completa e não se esqueça de emitir as tags <ADD_TASK> para as ações necessárias!
 - Pergunte sempre ao final: "Ficou claro este passo, Gabi, ou gostaria que eu explicasse algum detalhe tecnológico de outra forma?"
 - Use formatação Markdown (negrito, listas) para facilitar a leitura.
 `;
@@ -744,7 +863,10 @@ app.get('/stream', async (req, res) => {
     sendLog('✅ Conexão estabelecida e segura. Iniciando motores...');
 
     try {
-        await executarAuditoriaLote(sendLog);
+        const dossie = await executarAuditoriaLote(sendLog);
+        if (dossie) {
+            res.write(`data: [[REPORT_DATA]]${JSON.stringify(dossie)}\n\n`);
+        }
     } catch (e) {
         sendLog(`❌ Erro Fatal: ${e.message}`);
     }
