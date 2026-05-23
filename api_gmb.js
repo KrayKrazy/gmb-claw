@@ -11,14 +11,22 @@ const oauth2Client = new google.auth.OAuth2(
     config.googleClientSecret
 );
 
-// Tenta carregar tokens salvos
+// Tenta carregar tokens salvos ou da variável de ambiente
 try {
-    if (fs.existsSync(TOKEN_PATH)) {
-        const tokens = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
+    let tokens = null;
+    if (process.env.GMB_TOKENS_JSON) {
+        tokens = JSON.parse(process.env.GMB_TOKENS_JSON);
+    } else if (fs.existsSync(TOKEN_PATH)) {
+        tokens = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
+    }
+    
+    if (tokens) {
         oauth2Client.setCredentials(tokens);
+    } else {
+        console.warn("Aviso: Tokens não encontrados. Configure a variável GMB_TOKENS_JSON no Easypanel.");
     }
 } catch (error) {
-    console.error("Aviso: Não foi possível carregar os tokens OAuth2. Rode o 'node auth.js' primeiro.");
+    console.error("Aviso: Falha ao carregar os tokens OAuth2. Erro:", error.message);
 }
 
 // Event Listener para renovação automática de tokens (Refresh Token)

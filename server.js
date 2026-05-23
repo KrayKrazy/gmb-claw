@@ -486,6 +486,7 @@ app.get('/app', (req, res) => {
             const chatInput = document.getElementById('chatInput');
             const btnSendChat = document.getElementById('btnSendChat');
             const chatTyping = document.getElementById('chatTyping');
+            let chatHistory = [];
 
             async function sendMessage(text, isContextOtimizador = false) {
                 if(!isContextOtimizador) {
@@ -501,12 +502,27 @@ app.get('/app', (req, res) => {
                 }
 
                 try {
+                    // Atualiza histórico (apenas para chat normal)
+                    let currentHistory = [];
+                    if (!isContextOtimizador) {
+                        chatHistory.push({ role: 'user', parts: [{ text: text }] });
+                        currentHistory = chatHistory;
+                    }
+
+                    const payload = isContextOtimizador 
+                        ? { message: text, type: 'otimizador' }
+                        : { history: currentHistory, type: 'chat' };
+
                     const response = await fetch('/api/debora', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: text, type: isContextOtimizador ? 'otimizador' : 'chat' })
+                        body: JSON.stringify(payload)
                     });
                     const data = await response.json();
+                    
+                    if(!isContextOtimizador) {
+                        chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
+                    }
                     
                     if(isContextOtimizador) {
                         return data.reply;
@@ -641,16 +657,41 @@ Você deve ajudar a Gabriela nas seguintes frentes:
 - Use formatação Markdown (negrito, listas) para facilitar a leitura.
 `;
 
+import { listarContas, listarLocais } from './api_gmb.js';
+
 // Endpoint da Débora (Chat e Otimizador)
 app.post('/api/debora', async (req, res) => {
     try {
-        const { message, type } = req.body;
+        const { message, history, type } = req.body;
         
-        if (!message) {
+        if (!message && (!history || history.length === 0)) {
             return res.status(400).json({ error: "Mensagem vazia." });
         }
 
-        const reply = await gerarResposta(message, DEBORA_PROMPT);
+        // Puxar dinamicamente os clientes da agência via API GMB
+        let contextClientes = "";
+        try {
+            const contas = await listarContas();
+            let lista = [];
+            for (const conta of contas) {
+                const locais = await listarLocais(conta.name);
+                for (const local of locais) {
+                    if (local.title) lista.push(local.title);
+                }
+            }
+            if (lista.length > 0) {
+                contextClientes = `\n[CONTEXTO ATUAL DA AGÊNCIA]\nNossos clientes ativos atualmente no Google Meu Negócio são: ${lista.join(', ')}.\nSe a Gabriela perguntar sobre nossos clientes, use esta lista.`;
+            }
+        } catch (err) {
+            console.error("Não foi possível puxar os clientes no momento:", err.message);
+        }
+
+        const fullPrompt = DEBORA_PROMPT + contextClientes;
+        
+        // Se for history (chat com memória), envia o array. Se for message (otimizador), envia a string.
+        const inputToLLM = type === 'chat' && history ? history : message;
+        
+        const reply = await gerarResposta(inputToLLM, fullPrompt);
         res.json({ reply });
     } catch (error) {
         console.error("Erro no endpoint da Débora:", error);

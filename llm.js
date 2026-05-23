@@ -14,16 +14,21 @@ function getAIClient() {
     return ai;
 }
 
-export async function gerarResposta(prompt, systemInstruction = '', tentativas = 3) {
+export async function gerarResposta(promptOrHistory, systemInstruction = '', tentativas = 3) {
     const client = getAIClient();
     
+    // Suporte para string simples ou array de histórico
+    const contents = Array.isArray(promptOrHistory) 
+        ? promptOrHistory 
+        : [{ role: 'user', parts: [{ text: promptOrHistory }] }];
+
     for (let i = 0; i < tentativas; i++) {
         try {
             // No SDK unificado, o nome do modelo deve ser exato. 
             // O usuário selecionou Gemini 3 Flash, então usaremos o ID correspondente.
             const response = await client.models.generateContent({
                 model: 'gemini-3-flash-preview',
-                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                contents: contents,
                 config: {
                     systemInstruction: systemInstruction || 'Você é um assistente especialista em Google Meu Negócio e otimização local de SEO.',
                     temperature: 0.7
