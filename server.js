@@ -674,14 +674,13 @@ app.get('/app', (req, res) => {
                 tasksArray.forEach(task => {
                     const li = document.createElement('li');
                     li.className = 'task-item' + (task.completed ? ' completed' : '');
-                    li.innerHTML = `
-                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})">
-                        <div class="task-content">
-                            <h4 class="task-title">${task.title}</h4>
-                            <p class="task-desc">${task.desc}</p>
-                        </div>
-                        <button class="task-delete" onclick="deleteTask(${task.id})">🗑️</button>
-                    `;
+                    li.innerHTML = 
+                        '<input type="checkbox" class="task-checkbox" ' + (task.completed ? "checked" : "") + ' onclick="toggleTask(' + task.id + ')">' +
+                        '<div class="task-content">' +
+                            '<h4 class="task-title">' + task.title + '</h4>' +
+                            '<p class="task-desc">' + task.desc + '</p>' +
+                        '</div>' +
+                        '<button class="task-delete" onclick="deleteTask(' + task.id + ')">🗑️</button>';
                     taskListContainer.appendChild(li);
                 });
             }
