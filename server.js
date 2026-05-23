@@ -1,5 +1,6 @@
 import express from 'express';
 import { executarAuditoriaLote } from './batch_audit.js';
+import { gerarResposta } from './llm.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -186,95 +187,383 @@ app.get('/app', (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Painel de Operações | Kelevra Corp</title>
+        <title>Kelevra Workspace | Gabi</title>
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+            
             body {
                 font-family: 'Inter', sans-serif;
-                background-color: #0f172a;
-                color: #f8fafc;
+                background-color: #f8fafc;
+                color: #334155;
+                margin: 0;
+                display: flex;
+                height: 100vh;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                width: 280px;
+                background-color: #ffffff;
+                border-right: 1px solid #e2e8f0;
                 display: flex;
                 flex-direction: column;
-                align-items: center;
-                padding: 40px 20px;
-                margin: 0;
+                padding: 30px 20px;
             }
-            .container {
-                max-width: 800px;
-                width: 100%;
-                background: #1e293b;
-                padding: 30px;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            .user-profile {
                 text-align: center;
+                margin-bottom: 40px;
             }
-            h1 { color: #38bdf8; margin-bottom: 5px; }
-            p.subtitle { color: #94a3b8; margin-bottom: 30px; }
-            .auth-box {
-                margin-bottom: 20px;
+            .avatar {
+                width: 80px;
+                height: 80px;
+                background-color: #e0f2fe;
+                color: #0284c7;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                font-weight: 700;
+                margin: 0 auto 15px auto;
             }
-            input[type="password"] {
-                padding: 12px;
-                border-radius: 6px;
-                border: 1px solid #475569;
-                background: #0f172a;
-                color: white;
-                width: 250px;
-                margin-right: 10px;
+            .user-profile h2 { margin: 0; font-size: 18px; color: #0f172a; }
+            .user-profile p { margin: 5px 0 0 0; font-size: 13px; color: #64748b; }
+
+            .nav-item {
+                padding: 15px 20px;
+                margin-bottom: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                color: #64748b;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
-            button {
-                background: #0284c7;
+            .nav-item:hover { background-color: #f1f5f9; color: #0f172a; }
+            .nav-item.active { background-color: #e0f2fe; color: #0284c7; }
+
+            /* Main Content */
+            .main-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: #f8fafc;
+                overflow-y: auto;
+            }
+            
+            .header {
+                padding: 30px 50px;
+                background-color: #ffffff;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .header h1 { margin: 0; font-size: 24px; color: #0f172a; }
+            .header p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
+
+            .tab-content {
+                display: none;
+                padding: 40px 50px;
+                max-width: 900px;
+                margin: 0 auto;
+                width: 100%;
+            }
+            .tab-content.active { display: block; }
+
+            /* Chat Section */
+            .chat-container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                display: flex;
+                flex-direction: column;
+                height: 600px;
+                border: 1px solid #e2e8f0;
+            }
+            .chat-messages {
+                flex: 1;
+                padding: 30px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            .message { max-width: 80%; padding: 15px 20px; border-radius: 12px; font-size: 15px; line-height: 1.5; }
+            .msg-debora { background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; align-self: flex-start; border-bottom-left-radius: 2px; }
+            .msg-gabi { background-color: #0284c7; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+            
+            /* Markdown Styling for Chat */
+            .msg-debora h1, .msg-debora h2, .msg-debora h3 { margin-top: 0; font-size: 16px; margin-bottom: 10px; }
+            .msg-debora p { margin-bottom: 10px; }
+            .msg-debora p:last-child { margin-bottom: 0; }
+            .msg-debora ul, .msg-debora ol { margin-left: 20px; margin-bottom: 10px; }
+
+            .chat-input-area {
+                padding: 20px;
+                border-top: 1px solid #e2e8f0;
+                display: flex;
+                gap: 15px;
+            }
+            textarea.chat-input {
+                flex: 1;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 15px;
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                resize: none;
+                height: 60px;
+            }
+            textarea.chat-input:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 0 3px #e0f2fe; }
+            
+            button.btn-primary {
+                background-color: #0284c7;
                 color: white;
                 border: none;
-                padding: 12px 24px;
-                border-radius: 6px;
-                font-size: 16px;
+                border-radius: 8px;
+                padding: 0 25px;
+                font-weight: 600;
                 cursor: pointer;
-                font-weight: bold;
                 transition: background 0.3s;
             }
-            button:hover { background: #0369a1; }
-            button:disabled { background: #475569; cursor: not-allowed; }
-            
-            #terminal {
+            button.btn-primary:hover { background-color: #0369a1; }
+            button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+            /* Textarea for Otimizador */
+            .otimizador-area {
+                width: 100%;
+                height: 200px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 20px;
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                resize: vertical;
+                margin-bottom: 20px;
+                box-sizing: border-box;
+            }
+            .otimizador-area:focus { outline: none; border-color: #0284c7; }
+
+            /* Varredura Section */
+            .varredura-box {
+                background: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                text-align: center;
+                border: 1px solid #e2e8f0;
+            }
+            input[type="password"] {
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #cbd5e1;
+                font-size: 15px;
+                width: 250px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .progress-log {
                 margin-top: 30px;
-                background: #020617;
+                background: #f8fafc;
                 padding: 20px;
                 border-radius: 8px;
-                height: 400px;
+                height: 250px;
                 overflow-y: auto;
                 text-align: left;
                 font-family: 'Courier New', Courier, monospace;
-                color: #10b981;
-                border: 1px solid #334155;
+                font-size: 14px;
+                border: 1px solid #e2e8f0;
                 display: none;
-                white-space: pre-wrap;
             }
-            .log-line { margin-bottom: 5px; }
-            .error { color: #ef4444; }
-            .success { color: #34d399; }
-            .info { color: #60a5fa; }
+            .log-line { margin-bottom: 8px; color: #475569; }
+            .log-line.error { color: #ef4444; }
+            .log-line.success { color: #10b981; font-weight: bold; }
+
+            /* Loading Spinner */
+            .typing-indicator { display: none; color: #94a3b8; font-size: 14px; padding: 10px 20px; }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
     <body>
-        <div class="container">
-            <h1>Área Operacional</h1>
-            <p class="subtitle">Auditoria Automática de Portfólio (Sucesso do Cliente)</p>
-            
-            <div id="authSection" class="auth-box">
-                <input type="password" id="password" placeholder="Senha de Operação" />
+
+        <div class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">G</div>
+                <h2>Gabriela</h2>
+                <p>Head Operacional</p>
             </div>
             
-            <button id="btnStart">Iniciar Varredura Mensal</button>
-            
-            <div id="terminal"></div>
+            <div class="nav-item active" onclick="switchTab('chat')">
+                <span>💬</span> Falar com a Débora
+            </div>
+            <div class="nav-item" onclick="switchTab('otimizador')">
+                <span>🪄</span> Otimizador de Fichas
+            </div>
+            <div class="nav-item" onclick="switchTab('varredura')">
+                <span>🛡️</span> Varredura Automática
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header" id="mainHeader">
+                <h1>Falar com a Débora</h1>
+                <p>Sua assistente exclusiva para organizar o dia a dia e encantar os clientes.</p>
+            </div>
+
+            <!-- TAB 1: Chat -->
+            <div id="tab-chat" class="tab-content active">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message msg-debora">
+                            <strong>Débora:</strong><br><br>
+                            Olá, Gabi! Como posso ajudar a organizar a sua rotina hoje? Se tiver recebido um Plano de Ação, é só colar aqui que eu transformo em tarefas para a sua agenda!
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="chatTyping">A Débora está digitando...</div>
+                    <div class="chat-input-area">
+                        <textarea id="chatInput" class="chat-input" placeholder="Digite sua mensagem para a Débora..."></textarea>
+                        <button id="btnSendChat" class="btn-primary">Enviar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Otimizador -->
+            <div id="tab-otimizador" class="tab-content">
+                <div class="chat-container" style="height: auto; padding: 30px;">
+                    <h2 style="margin-top:0;">Otimizador de Fichas GMB</h2>
+                    <p style="color: #64748b; margin-bottom: 20px;">Cole aqui as informações da ficha do cliente (Nome, Descrição atual, Categorias). A Débora vai analisar e te dar o passo a passo de como arrumar no Google.</p>
+                    
+                    <textarea id="otimizadorInput" class="otimizador-area" placeholder="Cole os dados do Google Meu Negócio do cliente aqui..."></textarea>
+                    
+                    <button id="btnSendOtimizador" class="btn-primary" style="padding: 15px;">Analisar Ficha com a Débora</button>
+                    
+                    <div id="otimizadorResult" style="margin-top: 30px; display: none; background: #f0f9ff; padding: 25px; border-radius: 8px; border: 1px solid #bae6fd;">
+                        <!-- Markdown renderizado entra aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Varredura -->
+            <div id="tab-varredura" class="tab-content">
+                <div class="varredura-box">
+                    <h2>Auditoria Automática de Portfólio</h2>
+                    <p style="color: #64748b; margin-bottom: 30px;">Inicie a varredura mensal dos clientes para gerar o dossiê da diretoria.</p>
+                    
+                    <input type="password" id="password" placeholder="Senha de Operação" /><br>
+                    <button id="btnStartScan" class="btn-primary" style="padding: 15px 30px;">Iniciar Varredura Segura</button>
+                    
+                    <div id="terminal" class="progress-log"></div>
+                </div>
+            </div>
         </div>
 
         <script>
-            const btn = document.getElementById('btnStart');
+            // Troca de Abas
+            function switchTab(tabId) {
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                
+                document.getElementById('tab-' + tabId).classList.add('active');
+                event.currentTarget.classList.add('active');
+
+                const headerTitle = document.querySelector('.header h1');
+                const headerDesc = document.querySelector('.header p');
+
+                if(tabId === 'chat') {
+                    headerTitle.innerText = "Falar com a Débora";
+                    headerDesc.innerText = "Sua assistente exclusiva para organizar o dia a dia e encantar os clientes.";
+                } else if(tabId === 'otimizador') {
+                    headerTitle.innerText = "Otimizador de Fichas";
+                    headerDesc.innerText = "Cole os dados do cliente e receba um passo a passo organizado.";
+                } else {
+                    headerTitle.innerText = "Varredura Automática";
+                    headerDesc.innerText = "Blindagem mensal do portfólio de clientes.";
+                }
+            }
+
+            // Chat Functionality
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const btnSendChat = document.getElementById('btnSendChat');
+            const chatTyping = document.getElementById('chatTyping');
+
+            async function sendMessage(text, isContextOtimizador = false) {
+                if(!isContextOtimizador) {
+                    // Adiciona mensagem da Gabi na UI
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message msg-gabi';
+                    msgDiv.innerText = text;
+                    chatMessages.appendChild(msgDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    chatInput.value = '';
+                    chatTyping.style.display = 'block';
+                    btnSendChat.disabled = true;
+                }
+
+                try {
+                    const response = await fetch('/api/debora', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text, type: isContextOtimizador ? 'otimizador' : 'chat' })
+                    });
+                    const data = await response.json();
+                    
+                    if(isContextOtimizador) {
+                        return data.reply;
+                    }
+
+                    chatTyping.style.display = 'none';
+                    btnSendChat.disabled = false;
+
+                    const replyDiv = document.createElement('div');
+                    replyDiv.className = 'message msg-debora';
+                    replyDiv.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(data.reply);
+                    chatMessages.appendChild(replyDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                } catch (error) {
+                    chatTyping.style.display = 'none';
+                    btnSendChat.disabled = false;
+                    alert('Erro de conexão com a Débora.');
+                }
+            }
+
+            btnSendChat.addEventListener('click', () => {
+                if(chatInput.value.trim() !== '') sendMessage(chatInput.value);
+            });
+            chatInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); btnSendChat.click(); }
+            });
+
+            // Otimizador Functionality
+            const btnSendOtimizador = document.getElementById('btnSendOtimizador');
+            const otimizadorInput = document.getElementById('otimizadorInput');
+            const otimizadorResult = document.getElementById('otimizadorResult');
+
+            btnSendOtimizador.addEventListener('click', async () => {
+                const text = otimizadorInput.value.trim();
+                if(!text) return alert('Cole os dados da ficha primeiro!');
+                
+                btnSendOtimizador.disabled = true;
+                btnSendOtimizador.innerText = 'A Débora está analisando...';
+                otimizadorResult.style.display = 'none';
+
+                const promptOtimizador = "Gabi falando: Débora, analise essa ficha do GMB e me dê o passo a passo exato do que eu devo alterar e onde clicar.\\n\\nDADOS DA FICHA:\\n" + text;
+                const reply = await sendMessage(promptOtimizador, true);
+                
+                otimizadorResult.innerHTML = marked.parse(reply);
+                otimizadorResult.style.display = 'block';
+                
+                btnSendOtimizador.disabled = false;
+                btnSendOtimizador.innerText = 'Analisar Novamente';
+            });
+
+            // Varredura Functionality (Mantida original)
+            const btnStartScan = document.getElementById('btnStartScan');
             const terminal = document.getElementById('terminal');
             const passwordInput = document.getElementById('password');
 
-            function appendLog(text, type = 'info') {
+            function appendLog(text, type = 'log-line') {
                 const div = document.createElement('div');
                 div.className = 'log-line ' + type;
                 div.innerText = text;
@@ -282,12 +571,12 @@ app.get('/app', (req, res) => {
                 terminal.scrollTop = terminal.scrollHeight;
             }
 
-            btn.addEventListener('click', () => {
+            btnStartScan.addEventListener('click', () => {
                 const pass = passwordInput.value;
-                if (!pass) return alert('Digite a senha.');
+                if (!pass) return alert('Digite a senha de operação.');
 
-                btn.disabled = true;
-                btn.innerText = 'Varredura em andamento...';
+                btnStartScan.disabled = true;
+                btnStartScan.innerText = 'Varredura em andamento...';
                 passwordInput.disabled = true;
                 terminal.style.display = 'block';
                 terminal.innerHTML = '';
@@ -296,7 +585,7 @@ app.get('/app', (req, res) => {
                 const eventSource = new EventSource('/stream?pwd=' + encodeURIComponent(pass));
 
                 eventSource.onmessage = function(event) {
-                    let type = 'info';
+                    let type = '';
                     if (event.data.includes('❌')) type = 'error';
                     if (event.data.includes('✅') || event.data.includes('🎉')) type = 'success';
                     
@@ -304,8 +593,8 @@ app.get('/app', (req, res) => {
                     
                     if (event.data.includes('🎉 Auditoria de Lote Finalizada!')) {
                         eventSource.close();
-                        btn.disabled = false;
-                        btn.innerText = 'Iniciar Nova Varredura';
+                        btnStartScan.disabled = false;
+                        btnStartScan.innerText = 'Iniciar Nova Varredura';
                         passwordInput.disabled = false;
                     }
                 };
@@ -313,8 +602,8 @@ app.get('/app', (req, res) => {
                 eventSource.onerror = function() {
                     appendLog('❌ Conexão encerrada ou senha incorreta.', 'error');
                     eventSource.close();
-                    btn.disabled = false;
-                    btn.innerText = 'Tentar Novamente';
+                    btnStartScan.disabled = false;
+                    btnStartScan.innerText = 'Tentar Novamente';
                     passwordInput.disabled = false;
                 };
             });
@@ -322,6 +611,51 @@ app.get('/app', (req, res) => {
     </body>
     </html>
     `);
+});
+
+// Prompt da Persona Débora
+const DEBORA_PROMPT = `[IDENTIDADE E PROPÓSITO]
+Você é a Débora, a Assistente Executiva e Estrategista Operacional de Marketing da Kelevra Corp. 
+Seu propósito exclusivo é auxiliar a Head Operacional, Gabriela, na gestão diária da agência focada em Google Meu Negócio (Google Business Profile) e Otimização para Inteligências Artificiais (LLMs).
+Sua missão é ser o braço direito da Gabriela, garantindo que os clientes da agência alcancem o topo das pesquisas, enquanto organiza a rotina dela de forma impecável.
+
+[PERFIL DA USUÁRIA (GABRIELA) E SEU TOM DE VOZ]
+A Gabriela possui um perfil comportamental Estável/Conforme (DISC). Isso significa que ela valoriza segurança, planejamento, detalhes, métodos e harmonia. Ela está iniciando no mundo empresarial e tecnológico agora.
+Portanto, a sua comunicação (Débora) deve ser ESTRITAMENTE:
+1. Paciente, acolhedora e encorajadora. Nunca use um tom de cobrança, urgência excessiva ou pressão.
+2. Extremamente minuciosa e estruturada. Nunca dê instruções genéricas. Tudo deve ser em formato de "Passo a Passo" enumerado (1, 2, 3...).
+3. Didática. Sempre que usar um termo técnico (SEO, LLM, Prompt, Ranking, CTA), você DEVE explicar o que significa de forma simples, usando analogias do dia a dia.
+
+[ESCOPO DE ATUAÇÃO E TAREFAS]
+Você deve ajudar a Gabriela nas seguintes frentes:
+1. OTIMIZAÇÃO DE GOOGLE MEU NEGÓCIO E SEO LOCAL: Indicar quais palavras-chave usar e como/onde inserir no GMB.
+2. OTIMIZAÇÃO PARA LLMs: Orientar formatação para IA.
+3. TRADUÇÃO DE PLANOS DE AÇÃO: Fatiar PDFs/textos da diretoria em tarefas lógicas.
+4. GESTÃO DE TEMPO (Google Agenda): Criar títulos, datas e descrições exatas para copiar e colar.
+5. CRIAÇÃO DE METAS S.M.A.R.T.: Explicar o acrônimo e desenhar as metas.
+
+[REGRAS DE INTERAÇÃO - OBRIGATÓRIO]
+- Toda vez que a Gabriela pedir ajuda com um novo cliente ou tarefa, inicie a resposta validando a importância do trabalho dela. Ex: "Excelente iniciativa, Gabi. Vamos organizar isso passo a passo..."
+- Se a instrução envolver clicar em botões no Google Meu Negócio, descreva onde o botão fica.
+- Pergunte sempre ao final: "Ficou claro este passo, Gabi, ou gostaria que eu explicasse algum detalhe tecnológico de outra forma?"
+- Use formatação Markdown (negrito, listas) para facilitar a leitura.
+`;
+
+// Endpoint da Débora (Chat e Otimizador)
+app.post('/api/debora', async (req, res) => {
+    try {
+        const { message, type } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ error: "Mensagem vazia." });
+        }
+
+        const reply = await gerarResposta(message, DEBORA_PROMPT);
+        res.json({ reply });
+    } catch (error) {
+        console.error("Erro no endpoint da Débora:", error);
+        res.status(500).json({ error: "A Débora teve um probleminha técnico para responder." });
+    }
 });
 
 // Endpoint SSE para rodar a auditoria em Lote
