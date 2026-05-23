@@ -354,6 +354,9 @@ app.get('/stream', async (req, res) => {
     res.end();
 });
 
-app.listen(PORT, () => {
-    console.log(`🦀 Kelevra Web Server rodando na porta ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n========================================`);
+    console.log(`🦀 Kelevra Web Server LIGADO!`);
+    console.log(`🌍 Escutando em 0.0.0.0 na porta ${PORT}`);
+    console.log(`========================================\n`);
 });
