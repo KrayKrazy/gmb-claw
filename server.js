@@ -486,7 +486,27 @@ app.get('/app', (req, res) => {
             const chatInput = document.getElementById('chatInput');
             const btnSendChat = document.getElementById('btnSendChat');
             const chatTyping = document.getElementById('chatTyping');
-            let chatHistory = [];
+            let chatHistory = JSON.parse(localStorage.getItem('deboraChatHistory')) || [];
+
+            // Renderiza histórico inicial
+            function renderInitialHistory() {
+                if (chatHistory.length > 0) {
+                    chatHistory.forEach(msg => {
+                        const div = document.createElement('div');
+                        if (msg.role === 'user') {
+                            div.className = 'message msg-gabi';
+                            div.innerText = msg.parts[0].text;
+                        } else {
+                            div.className = 'message msg-debora';
+                            div.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(msg.parts[0].text);
+                        }
+                        chatMessages.appendChild(div);
+                    });
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+            // Chama no boot
+            renderInitialHistory();
 
             async function sendMessage(text, isContextOtimizador = false) {
                 if(!isContextOtimizador) {
@@ -506,7 +526,9 @@ app.get('/app', (req, res) => {
                     let currentHistory = [];
                     if (!isContextOtimizador) {
                         chatHistory.push({ role: 'user', parts: [{ text: text }] });
-                        currentHistory = chatHistory;
+                        localStorage.setItem('deboraChatHistory', JSON.stringify(chatHistory));
+                        // Envia apenas as últimas 40 mensagens para poupar tokens
+                        currentHistory = chatHistory.slice(-40);
                     }
 
                     const payload = isContextOtimizador 
@@ -522,6 +544,7 @@ app.get('/app', (req, res) => {
                     
                     if(!isContextOtimizador) {
                         chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
+                        localStorage.setItem('deboraChatHistory', JSON.stringify(chatHistory));
                     }
                     
                     if(isContextOtimizador) {
