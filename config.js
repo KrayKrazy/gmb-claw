@@ -14,5 +14,6 @@ export const config = {
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     agentLanguage: process.env.AGENT_LANGUAGE || 'pt-BR',
-    agentMode: process.env.AGENT_MODE || 'cli'
+    agentMode: process.env.AGENT_MODE || 'cli',
+    serpApiKeys: (process.env.SERPAPI_KEYS || process.env.SERPAPI_KEY || '').split(',').map(k => k.trim()).filter(Boolean)
 };

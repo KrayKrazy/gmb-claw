@@ -1,9 +1,15 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
+import { config } from './config.js';
 
-dotenv.config();
+let currentKeyIndex = 0;
 
-const API_KEY = process.env.SERPAPI_KEY;
+function getApiKey() {
+    const keys = config.serpApiKeys;
+    if (!keys || keys.length === 0) return '';
+    const key = keys[currentKeyIndex];
+    currentKeyIndex = (currentKeyIndex + 1) % keys.length;
+    return key;
+}
 const BASE_URL = 'https://serpapi.com/search';
 
 
@@ -17,7 +23,7 @@ export async function buscarEmpresaNoMaps(q, location = '') {
             params: {
                 engine: 'google_maps',
                 q: queryFinal,
-                api_key: API_KEY,
+                api_key: getApiKey(),
                 hl: 'pt-br'
             }
         });
@@ -44,7 +50,7 @@ export async function buscarConcorrentes(categoria, localizacao, ll = null) {
         const params = {
             engine: 'google_maps',
             q: queryFinal,
-            api_key: API_KEY,
+            api_key: getApiKey(),
             hl: 'pt-br'
         };
 
@@ -70,7 +76,7 @@ export async function buscarOrganicSOV(q, location = '') {
             params: {
                 engine: 'google',
                 q: queryFinal,
-                api_key: API_KEY,
+                api_key: getApiKey(),
                 hl: 'pt-br'
             }
         });
@@ -132,7 +138,7 @@ export async function buscarRankingGeogrid(palavraChave, nomeEmpresaAlvo, lat, l
                 engine: 'google_maps',
                 q: palavraChave,
                 ll: `@${ponto.lat},${ponto.lng},15z`,
-                api_key: API_KEY,
+                api_key: getApiKey(),
                 hl: 'pt-br'
             };
             
@@ -169,7 +175,7 @@ export async function buscarFotosPorDataId(dataId) {
             params: {
                 engine: 'google_maps_photos',
                 data_id: dataId,
-                api_key: API_KEY,
+                api_key: getApiKey(),
                 hl: 'pt-br'
             }
         });
@@ -193,7 +199,7 @@ export async function buscarDataIdPorKgmid(nomeEmpresa, kgmid) {
                 engine: 'google',
                 q: nomeEmpresa,
                 kgmid: kgmid,
-                api_key: API_KEY,
+                api_key: getApiKey(),
                 hl: 'pt-br'
             }
         });
