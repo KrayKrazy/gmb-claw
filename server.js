@@ -189,109 +189,295 @@ app.get('/app', (req, res) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kelevra Workspace | Gabi</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-            
-            .msg-debora ul, .msg-debora ol { margin-left: 20px; margin-bottom: 10px; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: #0a0f1e;
+                color: #cbd5e1;
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* ===== SIDEBAR ===== */
+            .sidebar {
+                width: 260px;
+                min-width: 260px;
+                background: linear-gradient(180deg, #111827 0%, #0d1526 100%);
+                border-right: 1px solid #1e2d45;
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+            }
+
+            .user-profile {
+                padding: 28px 20px 24px 20px;
+                border-bottom: 1px solid #1e2d45;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+            .avatar {
+                width: 46px;
+                height: 46px;
+                background: linear-gradient(135deg, #3b82f6, #6366f1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                font-weight: 700;
+                color: white;
+                flex-shrink: 0;
+            }
+            .user-profile h2 { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+            .user-profile p { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+            .nav-menu { padding: 16px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+            .nav-item {
+                padding: 12px 16px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: #94a3b8;
+                font-size: 14px;
+                font-weight: 500;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+            .nav-item:hover { background-color: #1e2d45; color: #e2e8f0; }
+            .nav-item.active { background: linear-gradient(135deg, #1d4ed8, #4338ca); color: white; font-weight: 600; }
+            .nav-item span { font-size: 18px; width: 22px; text-align: center; }
+
+            /* ===== MAIN CONTENT ===== */
+            .main-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background-color: #0a0f1e;
+                overflow: hidden;
+            }
+
+            .header {
+                background: #111827;
+                padding: 20px 32px;
+                border-bottom: 1px solid #1e2d45;
+                flex-shrink: 0;
+            }
+            .header h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0; }
+            .header p { font-size: 13px; color: #64748b; margin: 4px 0 0 0; }
+
+            /* ===== TABS ===== */
+            .tab-content { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+            .tab-content.active { display: flex; }
+
+            /* ===== CHAT ===== */
+            .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+            .chat-messages {
+                flex: 1;
+                padding: 24px 32px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+            }
+            .chat-messages::-webkit-scrollbar { width: 6px; }
+            .chat-messages::-webkit-scrollbar-track { background: transparent; }
+            .chat-messages::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+
+            .message {
+                max-width: 78%;
+                padding: 16px 20px;
+                border-radius: 14px;
+                line-height: 1.65;
+                font-size: 14px;
+            }
+            .msg-debora {
+                background: #111827;
+                border: 1px solid #1e2d45;
+                align-self: flex-start;
+                border-top-left-radius: 3px;
+                color: #cbd5e1;
+            }
+            .msg-debora strong { color: #60a5fa; display: block; margin-bottom: 8px; }
+            .msg-gabi {
+                background: linear-gradient(135deg, #2563eb, #4f46e5);
+                color: white;
+                align-self: flex-end;
+                border-top-right-radius: 3px;
+            }
+            .msg-debora h1, .msg-debora h2, .msg-debora h3 { color: #e2e8f0; font-size: 15px; margin: 12px 0 6px; }
+            .msg-debora p { margin-bottom: 8px; }
+            .msg-debora p:last-child { margin-bottom: 0; }
+            .msg-debora ul, .msg-debora ol { margin-left: 20px; margin-bottom: 8px; }
+            .msg-debora li { margin-bottom: 4px; }
+            .msg-debora pre { background: #0a0f1e; padding: 12px; border-radius: 6px; overflow-x: auto; border: 1px solid #1e2d45; margin: 8px 0; }
+            .msg-debora code { font-family: 'Courier New', monospace; font-size: 13px; color: #38bdf8; }
+            .msg-debora a { color: #60a5fa; }
+
+            .typing-indicator { display: none; color: #64748b; font-size: 13px; padding: 8px 32px; }
 
             .chat-input-area {
-                padding: 20px;
-                border-top: 1px solid #e2e8f0;
+                padding: 16px 24px;
+                border-top: 1px solid #1e2d45;
+                background: #111827;
                 display: flex;
-                gap: 15px;
+                gap: 12px;
+                align-items: flex-end;
             }
             textarea.chat-input {
                 flex: 1;
-                border: 1px solid #cbd5e1;
-                border-radius: 8px;
-                padding: 15px;
+                border: 1px solid #1e2d45;
+                background: #0a0f1e;
+                color: #e2e8f0;
+                border-radius: 10px;
+                padding: 14px 16px;
                 font-family: 'Inter', sans-serif;
                 font-size: 14px;
                 resize: none;
-                height: 60px;
+                height: 56px;
+                transition: border-color 0.2s;
             }
-            textarea.chat-input:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 0 3px #e0f2fe; }
-            
+            textarea.chat-input::placeholder { color: #475569; }
+            textarea.chat-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+
             button.btn-primary {
-                background-color: #0284c7;
+                background: linear-gradient(135deg, #2563eb, #4f46e5);
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 0 25px;
+                border-radius: 10px;
+                padding: 14px 24px;
                 font-weight: 600;
+                font-size: 14px;
                 cursor: pointer;
-                transition: background 0.3s;
+                transition: opacity 0.2s, transform 0.1s;
+                white-space: nowrap;
             }
-            button.btn-primary:hover { background-color: #0369a1; }
-            button:disabled { opacity: 0.7; cursor: not-allowed; }
+            button.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+            button.btn-primary:active { transform: translateY(0); }
+            button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-            /* Textarea for Otimizador */
+            /* ===== OTIMIZADOR ===== */
+            .otimizador-panel {
+                flex: 1;
+                padding: 28px 32px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
             .otimizador-area {
                 width: 100%;
                 height: 200px;
-                border: 1px solid #334155;
-                background-color: #0f172a;
-                color: #f1f5f9;
-                border-radius: 8px;
-                padding: 20px;
+                border: 1px solid #1e2d45;
+                background: #111827;
+                color: #e2e8f0;
+                border-radius: 10px;
+                padding: 16px;
                 font-family: 'Inter', sans-serif;
                 font-size: 14px;
                 resize: vertical;
-                margin-bottom: 20px;
-                box-sizing: border-box;
+                transition: border-color 0.2s;
             }
+            .otimizador-area::placeholder { color: #475569; }
             .otimizador-area:focus { outline: none; border-color: #3b82f6; }
-
-            /* Varredura Section */
-            .varredura-box {
-                background: #1e293b;
-                padding: 40px;
-                border-radius: 12px;
-                text-align: center;
-                border: 1px solid #334155;
+            #otimizadorResult {
+                margin-top: 8px;
+                display: none;
+                background: #111827;
+                padding: 24px;
+                border-radius: 10px;
+                border: 1px solid #1e3a5f;
+                color: #cbd5e1;
+                line-height: 1.7;
             }
+
+            /* ===== VARREDURA ===== */
+            .varredura-panel {
+                flex: 1;
+                padding: 28px 32px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .varredura-box {
+                background: #111827;
+                padding: 40px;
+                border-radius: 16px;
+                text-align: center;
+                border: 1px solid #1e2d45;
+                width: 100%;
+                max-width: 600px;
+            }
+            .varredura-box h2 { color: #f1f5f9; margin-bottom: 10px; }
+            .varredura-box p { color: #64748b; margin-bottom: 28px; font-size: 14px; }
             input[type="password"] {
-                padding: 15px;
-                border-radius: 8px;
-                border: 1px solid #334155;
-                background-color: #0f172a;
+                padding: 14px 20px;
+                border-radius: 10px;
+                border: 1px solid #1e2d45;
+                background: #0a0f1e;
                 color: #f1f5f9;
                 font-size: 15px;
-                width: 250px;
-                margin-bottom: 20px;
+                width: 260px;
+                margin-bottom: 16px;
                 text-align: center;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
             }
+            input[type="password"]::placeholder { color: #475569; }
             .progress-log {
-                margin-top: 30px;
-                background: #0f172a;
-                padding: 20px;
-                border-radius: 8px;
-                height: 250px;
+                margin-top: 24px;
+                background: #0a0f1e;
+                padding: 16px;
+                border-radius: 10px;
+                height: 280px;
                 overflow-y: auto;
                 text-align: left;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 14px;
-                border: 1px solid #334155;
-                color: #cbd5e1;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                border: 1px solid #1e2d45;
+                color: #94a3b8;
                 display: none;
             }
-            .log-line { margin-bottom: 8px; color: #475569; }
-            .log-line.error { color: #ef4444; }
-            .log-line.success { color: #10b981; font-weight: bold; }
+            .log-line { margin-bottom: 6px; color: #64748b; }
+            .log-line.error { color: #f87171; }
+            .log-line.success { color: #34d399; font-weight: bold; }
 
-            /* Loading Spinner */
-            .typing-indicator { display: none; color: #94a3b8; font-size: 14px; padding: 10px 20px; }
-
-            /* Task Manager */
-            .task-list { list-style: none; padding: 0; margin: 0; }
-            .task-item { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; }
-            .task-checkbox { width: 20px; height: 20px; cursor: pointer; margin-top: 5px; }
+            /* ===== TASK MANAGER ===== */
+            .tasks-panel {
+                flex: 1;
+                padding: 28px 32px;
+                overflow-y: auto;
+            }
+            .tasks-panel h2 { color: #f1f5f9; margin-bottom: 8px; }
+            .tasks-panel > p { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+            .task-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+            .task-item {
+                background: #111827;
+                border: 1px solid #1e2d45;
+                border-radius: 10px;
+                padding: 18px 20px;
+                display: flex;
+                align-items: flex-start;
+                gap: 14px;
+                transition: border-color 0.2s;
+            }
+            .task-item:hover { border-color: #334155; }
+            .task-checkbox { width: 20px; height: 20px; cursor: pointer; margin-top: 3px; flex-shrink: 0; accent-color: #3b82f6; }
             .task-content { flex: 1; }
-            .task-title { font-weight: bold; color: #f1f5f9; margin: 0 0 5px 0; font-size: 16px; }
-            .task-desc { color: #94a3b8; margin: 0; font-size: 14px; }
-            .task-delete { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; opacity: 0.5; transition: opacity 0.3s; }
-            .task-delete:hover { opacity: 1; }
-            .task-item.completed .task-title, .task-item.completed .task-desc { text-decoration: line-through; opacity: 0.6; }
+            .task-title { font-weight: 600; color: #f1f5f9; margin: 0 0 5px 0; font-size: 15px; }
+            .task-desc { color: #64748b; margin: 0; font-size: 13px; line-height: 1.5; }
+            .task-delete { color: #475569; background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; transition: color 0.2s; flex-shrink: 0; }
+            .task-delete:hover { color: #ef4444; }
+            .task-item.completed .task-title, .task-item.completed .task-desc { text-decoration: line-through; opacity: 0.45; }
         </style>
+        
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
     <body>
@@ -299,21 +485,24 @@ app.get('/app', (req, res) => {
         <div class="sidebar">
             <div class="user-profile">
                 <div class="avatar">G</div>
-                <h2>Gabriela</h2>
-                <p>Head Operacional</p>
+                <div>
+                    <h2>Gabriela</h2>
+                    <p>Head Operacional</p>
+                </div>
             </div>
-            
-            <div class="nav-item active" onclick="switchTab('chat')">
-                <span>💬</span> Falar com a Débora
-            </div>
-            <div class="nav-item" onclick="switchTab('otimizador')">
-                <span>🪄</span> Otimizador de Fichas
-            </div>
-            <div class="nav-item" onclick="switchTab('varredura')">
-                <span>🛡️</span> Varredura Automática
-            </div>
-            <div class="nav-item" onclick="switchTab('tarefas')">
-                <span>✅</span> Minhas Tarefas
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="switchTab('chat')">
+                    <span>💬</span> Falar com a Débora
+                </div>
+                <div class="nav-item" onclick="switchTab('otimizador')">
+                    <span>🪄</span> Otimizador de Fichas
+                </div>
+                <div class="nav-item" onclick="switchTab('varredura')">
+                    <span>🛡️</span> Varredura Automática
+                </div>
+                <div class="nav-item" onclick="switchTab('tarefas')">
+                    <span>✅</span> Minhas Tarefas
+                </div>
             </div>
         </div>
 
@@ -342,15 +531,14 @@ app.get('/app', (req, res) => {
 
             <!-- TAB 2: Otimizador -->
             <div id="tab-otimizador" class="tab-content">
-                <div class="chat-container" style="height: auto; padding: 30px;">
-                    <h2 style="margin-top:0;">Otimizador de Fichas GMB</h2>
-                    <p style="color: #64748b; margin-bottom: 20px;">Cole aqui as informações da ficha do cliente (Nome, Descrição atual, Categorias). A Débora vai analisar e te dar o passo a passo de como arrumar no Google.</p>
-                    
+                <div class="otimizador-panel">
+                    <h2 style="color:#f1f5f9; margin-bottom:8px;">Otimizador de Fichas GMB</h2>
+                    <p style="color:#64748b; font-size:14px; margin-bottom:16px;">Cole aqui as informações da ficha do cliente. A Débora vai analisar e te dar o passo a passo.</p>
                     <textarea id="otimizadorInput" class="otimizador-area" placeholder="Cole os dados do Google Meu Negócio do cliente aqui..."></textarea>
-                    
-                    <button id="btnSendOtimizador" class="btn-primary" style="padding: 15px;">Analisar Ficha com a Débora</button>
-                    
-                    <div id="otimizadorResult" style="margin-top: 30px; display: none; background: #f0f9ff; padding: 25px; border-radius: 8px; border: 1px solid #bae6fd;">
+                    <div>
+                        <button id="btnSendOtimizador" class="btn-primary">Analisar Ficha com a Débora</button>
+                    </div>
+                    <div id="otimizadorResult">
                         <!-- Markdown renderizado entra aqui -->
                     </div>
                 </div>
@@ -358,22 +546,22 @@ app.get('/app', (req, res) => {
 
             <!-- TAB 3: Varredura -->
             <div id="tab-varredura" class="tab-content">
-                <div class="varredura-box">
-                    <h2>Auditoria Automática de Portfólio</h2>
-                    <p style="color: #64748b; margin-bottom: 30px;">Inicie a varredura mensal dos clientes para gerar o dossiê da diretoria.</p>
-                    
-                    <input type="password" id="password" placeholder="Senha de Operação" /><br>
-                    <button id="btnStartScan" class="btn-primary" style="padding: 15px 30px;">Iniciar Varredura Segura</button>
-                    
-                    <div id="terminal" class="progress-log"></div>
+                <div class="varredura-panel">
+                    <div class="varredura-box">
+                        <h2>Auditoria Automática de Portfólio</h2>
+                        <p>Inicie a varredura mensal dos clientes para gerar o dossiê da diretoria.</p>
+                        <input type="password" id="password" placeholder="Senha de Operação" />
+                        <button id="btnStartScan" class="btn-primary">Iniciar Varredura Segura</button>
+                        <div id="terminal" class="progress-log"></div>
+                    </div>
                 </div>
             </div>
 
             <!-- TAB 4: Tarefas -->
             <div id="tab-tarefas" class="tab-content">
-                <div class="chat-container" style="height: auto; padding: 30px;">
-                    <h2 style="margin-top:0;">Lista de Tarefas da Gabi</h2>
-                    <p style="color: #64748b; margin-bottom: 20px;">A Débora insere automaticamente as tarefas sugeridas aqui. Marque para concluir ou exclua.</p>
+                <div class="tasks-panel">
+                    <h2>Lista de Tarefas da Gabi</h2>
+                    <p>A Débora insere automaticamente as tarefas sugeridas aqui. Marque para concluir ou exclua.</p>
                     <ul class="task-list" id="taskListContainer">
                         <!-- Tarefas renderizadas aqui -->
                     </ul>
