@@ -575,8 +575,14 @@ app.get('/app', (req, res) => {
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 
-                document.getElementById('tab-' + tabId).classList.add('active');
-                event.currentTarget.classList.add('active');
+                const tabEl = document.getElementById('tab-' + tabId);
+                if (tabEl) tabEl.classList.add('active');
+
+                // Marca o nav-item correto sem depender do event global
+                const navItems = document.querySelectorAll('.nav-item');
+                const tabLabels = ['chat', 'otimizador', 'varredura', 'tarefas'];
+                const idx = tabLabels.indexOf(tabId);
+                if (idx !== -1 && navItems[idx]) navItems[idx].classList.add('active');
 
                 const headerTitle = document.querySelector('.header h1');
                 const headerDesc = document.querySelector('.header p');
@@ -597,19 +603,19 @@ app.get('/app', (req, res) => {
                 }
             }
 
+            // Limpa dados corrompidos do LocalStorage automaticamente
+            function safeGetStorage(key) {
+                try { return JSON.parse(localStorage.getItem(key)) || []; }
+                catch(e) { localStorage.removeItem(key); return []; }
+            }
+
             // Chat Functionality
             const chatMessages = document.getElementById('chatMessages');
             const chatInput = document.getElementById('chatInput');
             const btnSendChat = document.getElementById('btnSendChat');
             const chatTyping = document.getElementById('chatTyping');
             
-            let chatHistory = [];
-            try {
-                chatHistory = JSON.parse(localStorage.getItem('deboraChatHistory')) || [];
-            } catch(e) {
-                chatHistory = [];
-                localStorage.removeItem('deboraChatHistory');
-            }
+            let chatHistory = safeGetStorage('deboraChatHistory');
 
             // Renderiza histórico inicial
             function renderInitialHistory() {
@@ -734,14 +740,7 @@ app.get('/app', (req, res) => {
             });
 
             // Task Manager Functionality
-            let tasksArray = [];
-            try {
-                tasksArray = JSON.parse(localStorage.getItem('deboraTasks')) || [];
-            } catch (e) {
-                tasksArray = [];
-                localStorage.removeItem('deboraTasks');
-            }
-            
+            let tasksArray = safeGetStorage('deboraTasks');
             const taskListContainer = document.getElementById('taskListContainer');
 
             function saveTasks() {
