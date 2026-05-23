@@ -191,111 +191,6 @@ app.get('/app', (req, res) => {
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
             
-            body {
-                font-family: 'Inter', sans-serif;
-                background-color: #f8fafc;
-                color: #334155;
-                margin: 0;
-                display: flex;
-                height: 100vh;
-            }
-
-            /* Sidebar */
-            .sidebar {
-                width: 280px;
-                background-color: #ffffff;
-                border-right: 1px solid #e2e8f0;
-                display: flex;
-                flex-direction: column;
-                padding: 30px 20px;
-            }
-            .user-profile {
-                text-align: center;
-                margin-bottom: 40px;
-            }
-            .avatar {
-                width: 80px;
-                height: 80px;
-                background-color: #e0f2fe;
-                color: #0284c7;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 32px;
-                font-weight: 700;
-                margin: 0 auto 15px auto;
-            }
-            .user-profile h2 { margin: 0; font-size: 18px; color: #0f172a; }
-            .user-profile p { margin: 5px 0 0 0; font-size: 13px; color: #64748b; }
-
-            .nav-item {
-                padding: 15px 20px;
-                margin-bottom: 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 600;
-                color: #64748b;
-                transition: all 0.3s;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .nav-item:hover { background-color: #f1f5f9; color: #0f172a; }
-            .nav-item.active { background-color: #e0f2fe; color: #0284c7; }
-
-            /* Main Content */
-            .main-content {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                background-color: #f8fafc;
-                overflow-y: auto;
-            }
-            
-            .header {
-                padding: 30px 50px;
-                background-color: #ffffff;
-                border-bottom: 1px solid #e2e8f0;
-            }
-            .header h1 { margin: 0; font-size: 24px; color: #0f172a; }
-            .header p { margin: 5px 0 0 0; color: #64748b; font-size: 14px; }
-
-            .tab-content {
-                display: none;
-                padding: 40px 50px;
-                max-width: 900px;
-                margin: 0 auto;
-                width: 100%;
-            }
-            .tab-content.active { display: block; }
-
-            /* Chat Section */
-            .chat-container {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-                display: flex;
-                flex-direction: column;
-                height: 600px;
-                border: 1px solid #e2e8f0;
-            }
-            .chat-messages {
-                flex: 1;
-                padding: 30px;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            }
-            .message { max-width: 80%; padding: 15px 20px; border-radius: 12px; font-size: 15px; line-height: 1.5; }
-            .msg-debora { background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; align-self: flex-start; border-bottom-left-radius: 2px; }
-            .msg-gabi { background-color: #0284c7; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-            
-            /* Markdown Styling for Chat */
-            .msg-debora h1, .msg-debora h2, .msg-debora h3 { margin-top: 0; font-size: 16px; margin-bottom: 10px; }
-            .msg-debora p { margin-bottom: 10px; }
-            .msg-debora p:last-child { margin-bottom: 0; }
             .msg-debora ul, .msg-debora ol { margin-left: 20px; margin-bottom: 10px; }
 
             .chat-input-area {
@@ -333,7 +228,9 @@ app.get('/app', (req, res) => {
             .otimizador-area {
                 width: 100%;
                 height: 200px;
-                border: 1px solid #cbd5e1;
+                border: 1px solid #334155;
+                background-color: #0f172a;
+                color: #f1f5f9;
                 border-radius: 8px;
                 padding: 20px;
                 font-family: 'Inter', sans-serif;
@@ -342,21 +239,22 @@ app.get('/app', (req, res) => {
                 margin-bottom: 20px;
                 box-sizing: border-box;
             }
-            .otimizador-area:focus { outline: none; border-color: #0284c7; }
+            .otimizador-area:focus { outline: none; border-color: #3b82f6; }
 
             /* Varredura Section */
             .varredura-box {
-                background: white;
+                background: #1e293b;
                 padding: 40px;
                 border-radius: 12px;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
                 text-align: center;
-                border: 1px solid #e2e8f0;
+                border: 1px solid #334155;
             }
             input[type="password"] {
                 padding: 15px;
                 border-radius: 8px;
-                border: 1px solid #cbd5e1;
+                border: 1px solid #334155;
+                background-color: #0f172a;
+                color: #f1f5f9;
                 font-size: 15px;
                 width: 250px;
                 margin-bottom: 20px;
@@ -364,7 +262,7 @@ app.get('/app', (req, res) => {
             }
             .progress-log {
                 margin-top: 30px;
-                background: #f8fafc;
+                background: #0f172a;
                 padding: 20px;
                 border-radius: 8px;
                 height: 250px;
@@ -372,7 +270,8 @@ app.get('/app', (req, res) => {
                 text-align: left;
                 font-family: 'Courier New', Courier, monospace;
                 font-size: 14px;
-                border: 1px solid #e2e8f0;
+                border: 1px solid #334155;
+                color: #cbd5e1;
                 display: none;
             }
             .log-line { margin-bottom: 8px; color: #475569; }
@@ -384,11 +283,11 @@ app.get('/app', (req, res) => {
 
             /* Task Manager */
             .task-list { list-style: none; padding: 0; margin: 0; }
-            .task-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+            .task-item { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; }
             .task-checkbox { width: 20px; height: 20px; cursor: pointer; margin-top: 5px; }
             .task-content { flex: 1; }
-            .task-title { font-weight: bold; color: #0f172a; margin: 0 0 5px 0; font-size: 16px; }
-            .task-desc { color: #64748b; margin: 0; font-size: 14px; }
+            .task-title { font-weight: bold; color: #f1f5f9; margin: 0 0 5px 0; font-size: 16px; }
+            .task-desc { color: #94a3b8; margin: 0; font-size: 14px; }
             .task-delete { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; opacity: 0.5; transition: opacity 0.3s; }
             .task-delete:hover { opacity: 1; }
             .task-item.completed .task-title, .task-item.completed .task-desc { text-decoration: line-through; opacity: 0.6; }
@@ -515,23 +414,35 @@ app.get('/app', (req, res) => {
             const chatInput = document.getElementById('chatInput');
             const btnSendChat = document.getElementById('btnSendChat');
             const chatTyping = document.getElementById('chatTyping');
-            let chatHistory = JSON.parse(localStorage.getItem('deboraChatHistory')) || [];
+            
+            let chatHistory = [];
+            try {
+                chatHistory = JSON.parse(localStorage.getItem('deboraChatHistory')) || [];
+            } catch(e) {
+                chatHistory = [];
+                localStorage.removeItem('deboraChatHistory');
+            }
 
             // Renderiza histórico inicial
             function renderInitialHistory() {
-                if (chatHistory.length > 0) {
-                    chatHistory.forEach(msg => {
-                        const div = document.createElement('div');
-                        if (msg.role === 'user') {
-                            div.className = 'message msg-gabi';
-                            div.innerText = msg.parts[0].text;
-                        } else {
-                            div.className = 'message msg-debora';
-                            div.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(msg.parts[0].text);
-                        }
-                        chatMessages.appendChild(div);
-                    });
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                try {
+                    if (chatHistory.length > 0) {
+                        chatHistory.forEach(msg => {
+                            if (!msg || !msg.parts || !msg.parts[0] || !msg.parts[0].text) return; // Segurança
+                            const div = document.createElement('div');
+                            if (msg.role === 'user') {
+                                div.className = 'message msg-gabi';
+                                div.innerText = msg.parts[0].text;
+                            } else {
+                                div.className = 'message msg-debora';
+                                div.innerHTML = '<strong>Débora:</strong><br><br>' + marked.parse(msg.parts[0].text);
+                            }
+                            chatMessages.appendChild(div);
+                        });
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                } catch(e) {
+                    console.error("Erro ao renderizar histórico", e);
                 }
             }
             // Chama no boot
@@ -635,7 +546,14 @@ app.get('/app', (req, res) => {
             });
 
             // Task Manager Functionality
-            let tasksArray = JSON.parse(localStorage.getItem('deboraTasks')) || [];
+            let tasksArray = [];
+            try {
+                tasksArray = JSON.parse(localStorage.getItem('deboraTasks')) || [];
+            } catch (e) {
+                tasksArray = [];
+                localStorage.removeItem('deboraTasks');
+            }
+            
             const taskListContainer = document.getElementById('taskListContainer');
 
             function saveTasks() {
