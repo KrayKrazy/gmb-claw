@@ -183,6 +183,11 @@ app.get('/', (req, res) => {
 
 // Rota Secundária - Painel de Operação CS (Focado no perfil Estável)
 app.get('/app', (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+
     res.send(`
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -572,6 +577,11 @@ app.get('/app', (req, res) => {
         </div>
 
         <script>
+            // Debugger Remoto Temporário
+            window.onerror = function(msg, url, lineNo) {
+                alert("Bug Frontend: " + msg + " na linha " + lineNo);
+            };
+
             // Troca de Abas
             function switchTab(tabId) {
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -630,6 +640,7 @@ app.get('/app', (req, res) => {
             const chatTyping = document.getElementById('chatTyping');
             
             let chatHistory = safeGetStorage('deboraChatHistory');
+            if (!Array.isArray(chatHistory)) chatHistory = [];
 
             // Renderiza histórico inicial
             function renderInitialHistory() {
@@ -755,6 +766,7 @@ app.get('/app', (req, res) => {
 
             // Task Manager Functionality
             let tasksArray = safeGetStorage('deboraTasks');
+            if (!Array.isArray(tasksArray)) tasksArray = [];
             const taskListContainer = document.getElementById('taskListContainer');
 
             function saveTasks() {
