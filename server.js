@@ -1,6 +1,4 @@
 import express from 'express';
-import { executarAuditoriaLote } from './batch_audit.js';
-import { gerarResposta } from './llm.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,6 +13,52 @@ const SENHA_ACESSO = process.env.DASHBOARD_PASSWORD || 'kelevra2026';
 app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
+
+// PASSO 5: Capturar qualquer erro async nao tratado para evitar crash do servidor
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[AVISO] Promessa nao tratada em:', promise, 'Motivo:', reason);
+    // NAO derruba o servidor — apenas loga
+});
+process.on('uncaughtException', (err) => {
+    console.error('[AVISO] Erro nao capturado:', err.message);
+    // NAO derruba o servidor — apenas loga
+});
+
+// PASSO 2: Importar modulos externos de forma segura (nunca derrubam o servidor)
+let executarAuditoriaLote = async () => { throw new Error('Modulo batch_audit nao carregado'); };
+let gerarResposta = async () => { throw new Error('Modulo llm nao carregado'); };
+let listarContas = async () => [];
+let listarLocais = async () => [];
+
+try {
+    const batchMod = await import('./batch_audit.js');
+    executarAuditoriaLote = batchMod.executarAuditoriaLote;
+    console.log('[OK] batch_audit.js carregado.');
+} catch(e) {
+    console.error('[AVISO] batch_audit.js falhou ao carregar:', e.message);
+}
+
+try {
+    const llmMod = await import('./llm.js');
+    gerarResposta = llmMod.gerarResposta;
+    console.log('[OK] llm.js carregado.');
+} catch(e) {
+    console.error('[AVISO] llm.js falhou ao carregar:', e.message);
+}
+
+try {
+    const gmbMod = await import('./api_gmb.js');
+    listarContas = gmbMod.listarContas;
+    listarLocais = gmbMod.listarLocais;
+    console.log('[OK] api_gmb.js carregado.');
+} catch(e) {
+    console.error('[AVISO] api_gmb.js falhou ao carregar (tokens ausentes?):', e.message);
+}
+
+// PASSO 4: Rota de healthcheck para o Easypanel
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Rota Principal - Landing Page Institucional Kelevra Corp
 app.get('/', (req, res) => {
@@ -577,10 +621,14 @@ app.get('/app', (req, res) => {
         </div>
 
         <script>
-            // Debugger Remoto Temporário
-            window.onerror = function(msg, url, lineNo) {
-                alert("Bug Frontend: " + msg + " na linha " + lineNo);
+            // PASSO 6: Captura erros sincronos E assincronos no browser
+            window.onerror = function(msg, url, lineNo, col, err) {
+                console.error('ERRO SINCRONO:', msg, 'linha', lineNo);
             };
+            window.addEventListener('unhandledrejection', function(event) {
+                console.error('ERRO ASYNC nao tratado:', event.reason);
+                event.preventDefault();
+            });
 
             // Troca de Abas
             function switchTab(tabId) {
@@ -943,7 +991,7 @@ Pode enviar múltiplas tags <ADD_TASK> na mesma mensagem, se houver várias tare
 - Use formatação Markdown (negrito, listas) para facilitar a leitura.
 `;
 
-import { listarContas, listarLocais } from './api_gmb.js';
+// api_gmb ja importado no topo de forma segura
 
 // Endpoint da Débora (Chat e Otimizador)
 app.post('/api/debora', async (req, res) => {

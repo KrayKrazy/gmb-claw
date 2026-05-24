@@ -27,7 +27,7 @@ export async function gerarResposta(promptOrHistory, systemInstruction = '', ten
             // No SDK unificado, o nome do modelo deve ser exato. 
             // O usuário selecionou Gemini 3 Flash, então usaremos o ID correspondente.
             const response = await client.models.generateContent({
-                model: 'gemini-3-flash-preview',
+                model: 'gemini-2.0-flash',
                 contents: contents,
                 config: {
                     systemInstruction: systemInstruction || 'Você é um assistente especialista em Google Meu Negócio e otimização local de SEO.',
@@ -64,7 +64,7 @@ export async function gerarRespostaComImagem(prompt, imagePaths, systemInstructi
         parts.push({ text: prompt });
 
         const response = await client.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-2.0-flash',
             contents: [{ role: 'user', parts: parts }],
             config: {
                 systemInstruction: systemInstruction || 'Você é um Auditor Visual de SEO Local.'
@@ -84,7 +84,7 @@ export async function gerarRespostaJSON(prompt, tentativas = 3) {
     for (let i = 0; i < tentativas; i++) {
         try {
             const response = await client.models.generateContent({
-                model: 'gemini-3-flash-preview',
+                model: 'gemini-2.0-flash',
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
                 config: {
                     responseMimeType: 'application/json',
