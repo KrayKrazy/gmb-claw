@@ -701,8 +701,17 @@ app.get('/app', (req, res) => {
                     });
                     const data = await response.json();
                     
+                    // BUG FIX: Garantir que reply nunca seja undefined
+                    const finalReplyRaw = (data && data.reply) ? data.reply : '';
+                    
+                    if(isContextOtimizador) {
+                        chatTyping.style.display = 'none';
+                        btnSendChat.disabled = false;
+                        return finalReplyRaw; // BUG FIX: return obrigatório para otimizador
+                    }
+                    
                     if(!isContextOtimizador) {
-                        let finalReply = data.reply;
+                        let finalReply = finalReplyRaw;
                         
                         // Extração de Tarefas ocultas (<ADD_TASK>Título|Descrição</ADD_TASK>)
                         const taskRegex = /<ADD_TASK>(.*?)<\/ADD_TASK>/gs;
@@ -728,9 +737,11 @@ app.get('/app', (req, res) => {
                     }
                     
                 } catch (error) {
+                    console.error('Erro sendMessage:', error);
                     chatTyping.style.display = 'none';
                     btnSendChat.disabled = false;
-                    alert('Erro de conexão com a Débora.');
+                    alert('Erro de conexão com a Débora: ' + error.message);
+                    return '';
                 }
             }
 
@@ -754,11 +765,14 @@ app.get('/app', (req, res) => {
                 btnSendOtimizador.innerText = 'A Débora está analisando...';
                 otimizadorResult.style.display = 'none';
 
-                const promptOtimizador = "Gabi falando: Débora, analise essa ficha do GMB e me dê o passo a passo exato do que eu devo alterar e onde clicar.\\n\\nDADOS DA FICHA:\\n" + text;
+                // BUG FIX: Aspas corrigidas - \n simples dentro de template literal
+                const promptOtimizador = `Gabi falando: Débora, analise essa ficha do GMB e me dê o passo a passo exato do que eu devo alterar e onde clicar.\n\nDADOS DA FICHA:\n${text}`;
                 const reply = await sendMessage(promptOtimizador, true);
                 
-                otimizadorResult.innerHTML = marked.parse(reply);
-                otimizadorResult.style.display = 'block';
+                if (reply) {
+                    otimizadorResult.innerHTML = marked.parse(reply);
+                    otimizadorResult.style.display = 'block';
+                }
                 
                 btnSendOtimizador.disabled = false;
                 btnSendOtimizador.innerText = 'Analisar Novamente';
