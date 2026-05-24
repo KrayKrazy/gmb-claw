@@ -734,8 +734,8 @@ app.get('/app', (req, res) => {
                     if (!isContextOtimizador) {
                         chatHistory.push({ role: 'user', parts: [{ text: text }] });
                         safeSetStorage('deboraChatHistory', chatHistory);
-                        // Envia apenas as últimas 40 mensagens para poupar tokens
-                        currentHistory = chatHistory.slice(-40);
+                        // OTIMIZAÇÃO: Envia apenas as últimas 20 mensagens (10 turnos) para poupar tokens
+                        currentHistory = chatHistory.slice(-20);
                     }
 
                     const payload = isContextOtimizador 
@@ -982,7 +982,6 @@ SEMPRE que você der um passo a passo para a Gabi e quiser registrar uma ação 
 <ADD_TASK>Título Curto|Descrição detalhada da ação</ADD_TASK>
 Exemplo: Se você disser para ela ligar para o cliente para pedir fotos, adicione no seu texto: <ADD_TASK>Ligar para Cliente XYZ|Pedir pelo menos 5 fotos da fachada bem iluminada e sem texto por cima.</ADD_TASK>.
 Pode enviar múltiplas tags <ADD_TASK> na mesma mensagem, se houver várias tarefas!
-
 [REGRAS DE INTERAÇÃO - OBRIGATÓRIO]
 - Toda vez que a Gabriela pedir ajuda com um novo cliente ou tarefa, inicie a resposta validando a importância do trabalho dela. Ex: "Excelente iniciativa, Gabi. Vamos organizar isso passo a passo..."
 - Se a instrução envolver clicar em botões no Google Meu Negócio, descreva onde o botão fica.

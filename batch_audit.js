@@ -7,13 +7,14 @@ import { gerarDashboardHTML } from './renderer.js';
 import fs from 'fs';
 import path from 'path';
 
-export async function executarAuditoria360Completa(businessName, dataId = null, log = console.log) {
+export async function executarAuditoria360Completa(businessName, dataId = null, log = console.log, locationQuery = '') {
     try {
         log(`\n✅ Empresa alvo: ${businessName}`);
         if (dataId) log(`🎯 data_id: ${dataId}`);
+        if (locationQuery) log(`🗺️ Localização identificada: ${locationQuery}`);
         log("📡 Puxando dados completos da SerpApi...");
         
-        const resultadosEmpresa = await buscarEmpresaNoMaps(businessName, '');
+        const resultadosEmpresa = await buscarEmpresaNoMaps(businessName, locationQuery);
         const empresaSerp = resultadosEmpresa[0];
         
         if (!empresaSerp) {
@@ -141,7 +142,13 @@ export async function executarAuditoriaLote(log = console.log) {
                     log(`🚀 INICIANDO AUDITORIA 360 PARA: ${detalhes.title}`);
                     log(`======================================================`);
                     
-                    await executarAuditoria360Completa(detalhes.title, null, log);
+                    let localQuery = '';
+                    if (detalhes.storefrontAddress) {
+                        const addr = detalhes.storefrontAddress;
+                        localQuery = `${addr.locality || ''} ${addr.administrativeArea || ''}`.trim();
+                    }
+                    
+                    await executarAuditoria360Completa(detalhes.title, null, log, localQuery);
                     
                     if (detalhes.profile) {
                         portfolioCompleto.push({

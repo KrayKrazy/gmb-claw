@@ -28,15 +28,8 @@ ${conhecimentoContexto}
 
 PROCESSO DE ANÁLISE OBRIGATÓRIO:
 
-PASSO 1: Árvore de Pensamento
-Antes de gerar o laudo, você DEVE abrir um bloco <raciocinio> e fazer a seguinte análise:
-- Avalie se o nome atual caracteriza "Keyword Stuffing" (excesso de palavras-chave) que viola as regras do Google.
-- Extraia a intenção de busca principal do negócio.
-- Calcule mentalmente o tamanho da descrição atual e os elementos de conversão que faltam.
-- Determine a correlação exata entre a categoria principal e as secundárias sugeridas.
+Entregue DIRETAMENTE o LAUDO PARA O CLIENTE formatado em Markdown, sem explicações prévias ou blocos de raciocínio, para economizar tokens.
 
-PASSO 2: O Laudo Final
-Após fechar o bloco </raciocinio>, entregue APENAS o LAUDO PARA O CLIENTE formatado em Markdown. 
 IMPORTANTE: 
 - NUNCA inclua nomes de menus do sistema, opções numéricas do agente ou referências a "Fonte X". 
 - NUNCA sugira descontos ou brindes em troca de avaliações (viola diretrizes do Google). Sugira apenas melhoria na experiência e pedido de feedback.
@@ -76,14 +69,7 @@ ${conhecimentoContexto}
 
 PROCESSO:
 
-PASSO 1: Análise Interna
-Abra um bloco <analise_interna> e identifique:
-- O tom emocional do cliente (irritado, satisfeito, neutro).
-- O problema raiz ou elogio principal.
-- A melhor estratégia de abordagem (desescalada ou fidelização).
-
-PASSO 2: Resposta Pública
-Feche o bloco </analise_interna> e escreva a resposta final para ser publicada no Google.
+Entregue a resposta final diretamente, sem raciocínio prévio.
 Regras da resposta:
 - Tom humano e corporativo maduro.
 - Se nota menor ou igual a 3: Não assuma culpa legal, demonstre empatia e direcione para o WhatsApp.
@@ -105,13 +91,7 @@ ${conhecimentoContexto}
 
 PROCESSO:
 
-PASSO 1: Estratégia
-Abra um bloco <estrategia> e defina:
-- Qual é a maior dor ou desejo de um cliente local buscando esse nicho hoje.
-- O ângulo da oferta (urgência, autoridade, prova social ou novidade).
-
-PASSO 2: Postagem Final
-Feche o bloco </estrategia> e entregue o post estruturado:
+Entregue o post estruturado diretamente:
 **Título do Post:**
 **Direção de Arte (Imagem):** (Instrução clara para o designer ou fotógrafo).
 **Copy:** (Máximo 300 caracteres, texto direto, focado na dor identificada).
@@ -172,15 +152,7 @@ ${conhecimentoContexto}
 
 PROCESSO DE ANÁLISE:
 
-PASSO 1: Diagnóstico Crítico
-Abra um bloco <raciocinio> e identifique:
-- O impacto da nota média atual no ranqueamento local e conversão (conforme pesos de 2026).
-- A saúde da frequência de reviews (Review Recency é vital em 2026).
-- A carência de conteúdo visual e presença de atributos (Horários, Serviços Predefinidos).
-- Potencial de visibilidade em IA (Presença em listas de especialistas e citações).
-
-PASSO 2: Plano de Recuperação (O Relatório)
-Após fechar o bloco </raciocinio>, entregue o RELATÓRIO DE REESTRUTURAÇÃO formatado em Markdown. 
+Entregue o RELATÓRIO DE REESTRUTURAÇÃO formatado em Markdown DIRETAMENTE, sem blocos de raciocínio prévios.
 REGRAS DE OURO:
 - Limpeza Total: Não inclua textos de sistema, logs de menu ou referências a "Fontes" internas.
 - Conformidade: Não sugira incentivos financeiros para reviews.
