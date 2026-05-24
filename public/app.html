@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelevra Workspace | Gabi</title>
+    <!-- Fontes Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Separado -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="avatar-container">
+                    <img src="profile.jpg" alt="Gabriela" class="avatar" />
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="user-info">
+                    <h2>Gabriela</h2>
+                    <p>Head Operacional</p>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="chat">
+                    <span class="icon">💬</span> Falar com a Débora
+                </button>
+                <button class="nav-item" data-tab="otimizador">
+                    <span class="icon">🪄</span> Otimizador de Fichas
+                </button>
+                <button class="nav-item" data-tab="varredura">
+                    <span class="icon">🛡️</span> Varredura Automática
+                </button>
+                <button class="nav-item" data-tab="tarefas">
+                    <span class="icon">✅</span> Minhas Tarefas
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header" id="mainHeader">
+                <h1 id="headerTitle">Falar com a Débora</h1>
+                <p id="headerDesc">Sua assistente exclusiva para organizar o dia a dia e encantar os clientes.</p>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- TAB 1: Chat -->
+                <section id="tab-chat" class="tab-content active">
+                    <div class="chat-container glass-panel">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message msg-debora">
+                                <div class="msg-author">Débora</div>
+                                <div class="msg-bubble">
+                                    Olá, Gabi! Como posso ajudar a organizar a sua rotina hoje? Se tiver recebido um Plano de Ação, é só colar aqui que eu transformo em tarefas para a sua agenda!
+                                </div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="chatTyping" style="display: none;">A Débora está digitando...</div>
+                        <div class="chat-input-area">
+                            <textarea id="chatInput" class="chat-input" placeholder="Digite sua mensagem para a Débora... (Pressione Enter para enviar)"></textarea>
+                            <button id="btnSendChat" class="btn-primary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: Otimizador -->
+                <section id="tab-otimizador" class="tab-content">
+                    <div class="otimizador-panel glass-panel">
+                        <div class="panel-header">
+                            <h2>Otimizador de Fichas GMB</h2>
+                            <p>Cole as informações brutas do cliente e deixe a inteligência estruturar o passo a passo.</p>
+                        </div>
+                        <textarea id="otimizadorInput" class="otimizador-area" placeholder="Cole os dados do Google Meu Negócio do cliente aqui..."></textarea>
+                        <button id="btnSendOtimizador" class="btn-primary btn-large">Analisar Ficha com a Débora</button>
+                        
+                        <div id="otimizadorResult" class="result-box" style="display: none;"></div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: Varredura -->
+                <section id="tab-varredura" class="tab-content">
+                    <div class="varredura-panel glass-panel">
+                        <div class="panel-header centered">
+                            <h2>Auditoria Automática de Portfólio</h2>
+                            <p>Inicie a varredura mensal para gerar o dossiê executivo de todos os clientes.</p>
+                        </div>
+                        
+                        <div class="scan-controls">
+                            <input type="password" id="password" class="auth-input" placeholder="Senha de Operação (ex: kelevra2026)" />
+                            <button id="btnStartScan" class="btn-primary btn-large btn-danger">Iniciar Varredura Segura</button>
+                        </div>
+
+                        <div id="terminal" class="progress-log terminal-font" style="display: none;"></div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: Tarefas -->
+                <section id="tab-tarefas" class="tab-content">
+                    <div class="tasks-panel glass-panel">
+                        <div class="panel-header">
+                            <h2>Lista de Tarefas da Gabi</h2>
+                            <p>As ações extraídas pela Débora aparecem magicamente aqui. Gerencie seu progresso.</p>
+                        </div>
+                        <ul class="task-list" id="taskListContainer">
+                            <!-- Tarefas dinâmicas -->
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
