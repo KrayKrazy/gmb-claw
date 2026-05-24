@@ -765,8 +765,8 @@ app.get('/app', (req, res) => {
                 btnSendOtimizador.innerText = 'A Débora está analisando...';
                 otimizadorResult.style.display = 'none';
 
-                // BUG FIX: Aspas corrigidas - \n simples dentro de template literal
-                const promptOtimizador = `Gabi falando: Débora, analise essa ficha do GMB e me dê o passo a passo exato do que eu devo alterar e onde clicar.\n\nDADOS DA FICHA:\n${text}`;
+                // BUG FIX: Sem backtick dentro do res.send (quebraria o template literal externo)
+                const promptOtimizador = 'Gabi falando: Débora, analise essa ficha do GMB e me dê o passo a passo exato do que eu devo alterar e onde clicar.\n\nDADOS DA FICHA:\n' + text;
                 const reply = await sendMessage(promptOtimizador, true);
                 
                 if (reply) {
