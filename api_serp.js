@@ -12,6 +12,31 @@ function getApiKey() {
 }
 const BASE_URL = 'https://serpapi.com/search';
 
+async function fetchSerpApi(params) {
+    const keys = config.serpApiKeys;
+    if (!keys || keys.length === 0) throw new Error("Nenhuma chave SerpApi configurada.");
+    
+    let attempts = 0;
+    while (attempts < keys.length) {
+        try {
+            params.api_key = getApiKey();
+            const response = await axios.get(BASE_URL, { params });
+            return response;
+        } catch (error) {
+            const isRateLimit = error.response && (error.response.status === 429 || error.response.status === 403 || (error.response.data && error.response.data.error && error.response.data.error.includes('run out of searches')));
+            if (isRateLimit) {
+                attempts++;
+                if (attempts >= keys.length) {
+                    throw new Error("Todas as chaves da SerpApi esgotaram ou estão com Rate Limit (429).");
+                }
+                console.warn(`[SerpApi] Chave esgotada (429). Tentando próxima chave...`);
+            } else {
+                throw error;
+            }
+        }
+    }
+}
+
 
 /**
  * Busca detalhes de uma empresa específica no Google Maps via SerpApi.
@@ -19,13 +44,10 @@ const BASE_URL = 'https://serpapi.com/search';
 export async function buscarEmpresaNoMaps(q, location = '') {
     try {
         const queryFinal = location ? `${q} ${location}` : q;
-        const response = await axios.get(BASE_URL, {
-            params: {
-                engine: 'google_maps',
-                q: queryFinal,
-                api_key: getApiKey(),
-                hl: 'pt-br'
-            }
+        const response = await fetchSerpApi({
+            engine: 'google_maps',
+            q: queryFinal,
+            hl: 'pt-br'
         });
 
         // Se for uma busca direta, a SerpApi retorna place_results com detalhes completos e fotos
@@ -50,7 +72,6 @@ export async function buscarConcorrentes(categoria, localizacao, ll = null) {
         const params = {
             engine: 'google_maps',
             q: queryFinal,
-            api_key: getApiKey(),
             hl: 'pt-br'
         };
 
@@ -58,7 +79,7 @@ export async function buscarConcorrentes(categoria, localizacao, ll = null) {
             params.ll = `@${ll.latitude},${ll.longitude},14z`; // 14z é um zoom aproximado de 5km
         }
 
-        const response = await axios.get(BASE_URL, { params });
+        const response = await fetchSerpApi(params);
         return response.data.local_results || [];
     } catch (error) {
         console.error("Erro ao buscar concorrentes na SerpApi:", error.message);
@@ -72,13 +93,10 @@ export async function buscarConcorrentes(categoria, localizacao, ll = null) {
 export async function buscarOrganicSOV(q, location = '') {
     try {
         const queryFinal = location ? `${q} ${location}` : q;
-        const response = await axios.get(BASE_URL, {
-            params: {
-                engine: 'google',
-                q: queryFinal,
-                api_key: getApiKey(),
-                hl: 'pt-br'
-            }
+        const response = await fetchSerpApi({
+            engine: 'google',
+            q: queryFinal,
+            hl: 'pt-br'
         });
 
         return {
@@ -138,11 +156,10 @@ export async function buscarRankingGeogrid(palavraChave, nomeEmpresaAlvo, lat, l
                 engine: 'google_maps',
                 q: palavraChave,
                 ll: `@${ponto.lat},${ponto.lng},15z`,
-                api_key: getApiKey(),
                 hl: 'pt-br'
             };
             
-            const response = await axios.get(BASE_URL, { params });
+            const response = await fetchSerpApi(params);
             const locais = response.data.local_results || [];
             
             // Procura a empresa alvo nos resultados
@@ -171,13 +188,10 @@ export async function buscarRankingGeogrid(palavraChave, nomeEmpresaAlvo, lat, l
  */
 export async function buscarFotosPorDataId(dataId) {
     try {
-        const response = await axios.get(BASE_URL, {
-            params: {
-                engine: 'google_maps_photos',
-                data_id: dataId,
-                api_key: getApiKey(),
-                hl: 'pt-br'
-            }
+        const response = await fetchSerpApi({
+            engine: 'google_maps_photos',
+            data_id: dataId,
+            hl: 'pt-br'
         });
 
         const photos = response.data.photos || [];
@@ -194,14 +208,11 @@ export async function buscarFotosPorDataId(dataId) {
  */
 export async function buscarDataIdPorKgmid(nomeEmpresa, kgmid) {
     try {
-        const response = await axios.get(BASE_URL, {
-            params: {
-                engine: 'google',
-                q: nomeEmpresa,
-                kgmid: kgmid,
-                api_key: getApiKey(),
-                hl: 'pt-br'
-            }
+        const response = await fetchSerpApi({
+            engine: 'google',
+            q: nomeEmpresa,
+            kgmid: kgmid,
+            hl: 'pt-br'
         });
         
         const link = response.data.knowledge_graph?.local_map?.link;
