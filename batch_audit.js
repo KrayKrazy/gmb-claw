@@ -30,6 +30,28 @@ export async function executarAuditoria360Completa(businessName, dataId = null, 
 
         let dataIdToUse = dataId || empresaSerp.data_id;
 
+        // Se não temos data_id mas temos place_id, buscamos os detalhes completos do lugar
+        if (!dataIdToUse && empresaSerp.place_id) {
+            log(`🔍 data_id ausente. Resolvendo via place_id: ${empresaSerp.place_id}...`);
+            try {
+                const { default: axios } = await import('axios');
+                const { config } = await import('./config.js');
+                const keys = config.serpApiKeys || [];
+                for (const key of keys) {
+                    try {
+                        const resp = await axios.get('https://serpapi.com/search', {
+                            params: { engine: 'google_maps', type: 'place', place_id: empresaSerp.place_id, api_key: key, hl: 'pt-br' }
+                        });
+                        const pr = resp.data.place_results;
+                        if (pr && pr.data_id) { dataIdToUse = pr.data_id; break; }
+                    } catch (e) {
+                        if (e.response && (e.response.status === 429 || e.response.status === 403)) continue;
+                        break;
+                    }
+                }
+            } catch(e) { log(`⚠️ Não foi possível resolver data_id: ${e.message}`); }
+        }
+
         if (dataIdToUse) {
             log(`📸 Buscando galeria completa via data_id (${dataIdToUse})...`);
             photosUrls = await buscarFotosPorDataId(dataIdToUse);
@@ -39,6 +61,7 @@ export async function executarAuditoria360Completa(businessName, dataId = null, 
             log(`📸 Fotos da galeria não encontradas. Usando fotos da vitrine geral...`);
             photosUrls = empresaSerp.photos.map(p => p.image || p.link).filter(Boolean);
         }
+
 
         if (photosUrls.length > 0) {
             totalFotos = photosUrls.length;

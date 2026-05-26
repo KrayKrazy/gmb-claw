@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laudo Visual · BSB Redes de Proteção | Kelevra Corp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #e8c96b;
+            --dark: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a26;
+            --border: rgba(201,168,76,0.18);
+            --text: #e8e8f0;
+            --text-muted: #8888aa;
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #1a1020 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 60px 40px 50px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .hero-brand { display: flex; flex-direction: column; gap: 6px; }
+        .hero-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, var(--gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub { color: var(--text-muted); font-size: 0.95rem; margin-top: 8px; }
+        .hero-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .hero-meta .badge {
+            background: linear-gradient(135deg, var(--gold), #8b6914);
+            color: #0a0a0f;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        .hero-meta .date { color: var(--text-muted); font-size: 0.85rem; }
+
+        /* SCORE CARDS */
+        .scores-section {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .score-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .score-card.red::before { background: var(--red); }
+        .score-card.yellow::before { background: var(--yellow); }
+        .score-card.green::before { background: var(--green); }
+        .score-card.gold::before { background: var(--gold); }
+        .score-label { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+        .score-value { font-size: 3rem; font-weight: 900; line-height: 1; }
+        .score-card.red .score-value { color: var(--red); }
+        .score-card.yellow .score-value { color: var(--yellow); }
+        .score-card.green .score-value { color: var(--green); }
+        .score-card.gold .score-value { color: var(--gold); }
+        .score-unit { font-size: 1rem; color: var(--text-muted); margin-top: 6px; }
+
+        /* MAIN CONTENT */
+        .content { max-width: 1100px; margin: 0 auto; padding: 0 40px 60px; }
+
+        /* SECTION HEADER */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 50px 0 24px;
+        }
+        .section-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--gold), #6b4f10);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .section-title { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .section-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* PHOTO CARDS */
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+        .photo-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .photo-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        .photo-header {
+            padding: 16px 18px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .photo-name { font-size: 0.9rem; font-weight: 600; color: #fff; }
+        .photo-score {
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+        .photo-score.low { color: var(--red); }
+        .photo-score.mid { color: var(--yellow); }
+        .photo-score.high { color: var(--green); }
+        .photo-score.top { color: var(--gold); }
+        .score-bar-wrap { height: 4px; background: rgba(255,255,255,0.06); }
+        .score-bar { height: 100%; transition: width 0.8s; }
+        .score-bar.low { background: var(--red); }
+        .score-bar.mid { background: var(--yellow); }
+        .score-bar.high { background: var(--green); }
+        .score-bar.top { background: var(--gold); }
+        .photo-body { padding: 16px 18px; }
+        .photo-diagnosis { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+        .photo-improvement {
+            font-size: 0.82rem;
+            color: var(--gold-light);
+            background: rgba(201,168,76,0.07);
+            border-left: 3px solid var(--gold);
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.6;
+        }
+        .photo-improvement strong { color: var(--gold); }
+
+        /* STRENGTHS / WEAKNESSES */
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        @media(max-width: 700px) { .analysis-grid { grid-template-columns: 1fr; } }
+        .analysis-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .analysis-box.green-box { border-color: rgba(16,185,129,0.3); }
+        .analysis-box.red-box { border-color: rgba(239,68,68,0.3); }
+        .analysis-box-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .analysis-box.green-box .analysis-box-title { color: var(--green); }
+        .analysis-box.red-box .analysis-box-title { color: var(--red); }
+        .analysis-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .analysis-list li {
+            font-size: 0.87rem;
+            color: var(--text);
+            line-height: 1.6;
+            padding-left: 20px;
+            position: relative;
+        }
+        .analysis-list li::before { position: absolute; left: 0; top: 0; }
+        .green-box .analysis-list li::before { content: '✓'; color: var(--green); }
+        .red-box .analysis-list li::before { content: '✗'; color: var(--red); }
+
+        /* CAPTURE PLAN */
+        .capture-plan {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .capture-plan-header {
+            padding: 22px 28px;
+            background: linear-gradient(90deg, rgba(201,168,76,0.12), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+        .capture-plan-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--gold); }
+        .capture-plan-header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .capture-items { padding: 8px 0; }
+        .capture-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 18px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s;
+        }
+        .capture-item:hover { background: rgba(201,168,76,0.04); }
+        .capture-item:last-child { border-bottom: none; }
+        .capture-num {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--gold), #6b4f10);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #0a0a0f;
+            flex-shrink: 0;
+        }
+        .capture-text { flex: 1; }
+        .capture-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .capture-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* ALERT BOX */
+        .alert-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 18px 22px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid;
+        }
+        .alert-box.warning {
+            background: rgba(239,68,68,0.07);
+            border-color: rgba(239,68,68,0.3);
+        }
+        .alert-icon { font-size: 1.4rem; flex-shrink: 0; }
+        .alert-content h4 { font-size: 0.9rem; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+        .alert-content p { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* FOOTER */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .footer-brand { font-size: 0.85rem; color: var(--text-muted); }
+        .footer-brand strong { color: var(--gold); }
+        .footer-note { font-size: 0.8rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <div class="hero-brand">
+        <div class="hero-tag">Kelevra Corp · Auditoria Visual</div>
+        <div class="hero-title">BSB Redes de<br>Proteção</div>
+        <div class="hero-sub">Laudo de Análise Visual · Google Meu Negócio · 23 fotos analisadas</div>
+    </div>
+    <div class="hero-meta">
+        <div class="badge">GEMINI VISION AI</div>
+        <div class="date">26 de Maio de 2026</div>
+    </div>
+</div>
+
+<div class="scores-section">
+    <div class="score-card yellow">
+        <div class="score-label">Fotos Analisadas</div>
+        <div class="score-value">23</div>
+        <div class="score-unit">imagens</div>
+    </div>
+    <div class="score-card red">
+        <div class="score-label">Nota Geral</div>
+        <div class="score-value">4.6</div>
+        <div class="score-unit">de 10 · Crítico</div>
+    </div>
+    <div class="score-card gold">
+        <div class="score-label">Maior Potencial</div>
+        <div class="score-value">8/10</div>
+        <div class="score-unit">gatinho na sacada</div>
+    </div>
+    <div class="score-card red">
+        <div class="score-label">Remoção Urgente</div>
+        <div class="score-value">2</div>
+        <div class="score-unit">fotos penalizáveis</div>
+    </div>
+</div>
+
+<div class="content">
+
+    <div class="alert-box warning">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+            <h4>AÇÃO URGENTE: Violação de Diretrizes Google 2026</h4>
+            <p>A foto com o logotipo flutuante gigante "BSB Redes de Proteção" cobrindo ~30% da imagem é considerada <strong>conteúdo promocional obstrutivo</strong> pelo algoritmo do Google Maps. Isso pode causar rejeição da imagem ou queda no ranking local. Remova imediatamente.</p>
+        </div>
+    </div>
+
+    <!-- ANÁLISE POR FOTO -->
+    <div class="section-header">
+        <div class="section-icon">📸</div>
+        <div>
+            <div class="section-title">Análise Individual das Imagens</div>
+            <div class="section-desc">Diagnóstico completo com nota de impacto de conversão (0–10) por foto</div>
+        </div>
+    </div>
+
+    <div class="photo-grid">
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Logotipo da Empresa</div>
+                <div class="photo-score low">2/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar low" style="width:20%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Logotipo pixelado, em baixíssima resolução e com arte serrilhada. A tipografia está quase ilegível — o pior ponto de contato da marca.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Substituir por arquivo vetorizado em PNG de alta definição. É a primeira impressão de confiança da marca nos resultados do Google.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Tela Mosquiteira (Janela Alumínio)</div>
+                <div class="photo-score low">4/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar low" style="width:40%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Foto real (ótima autenticidade), mas resolução muito baixa e ângulo lateral não valoriza a estética do ambiente.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Fotografar em dias claros mostrando a janela inteira de frente + detalhe de acabamento em alta resolução.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Fachada/Instalação Condomínio</div>
+                <div class="photo-score low">3/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar low" style="width:30%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Formato panorâmico extremo achatou e destruiu a resolução. Carro cortado em primeiro plano polui a cena. Confuso.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Fotografar em 4:3 ou 16:9 sem carros obstruindo, focando na rede instalada no playground/área comum.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Rede em Parede Azul</div>
+                <div class="photo-score mid">5/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar mid" style="width:50%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Bom contraste da rede branca contra a parede azul — atrai atenção. Mas sofre com pixelização e pouca luz interna.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Repetir a mesma cena com um celular moderno em modo HDR. Iluminar o interior para equilibrar com a luz da janela.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">🐱 Gato na Sacada com Rede</div>
+                <div class="photo-score top">8/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar top" style="width:80%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis"><strong>Maior potencial de conversão do portfólio.</strong> Clientes compram redes para proteger pets/filhos. O gato valida o produto emocionalmente. Mas a foto está escura e pixelada.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Pedir a um cliente uma foto nítida e bem iluminada do pet perto da rede. Investir nisso é a ação de maior ROI desta lista.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Rede de Proteção para Piscina</div>
+                <div class="photo-score mid">7/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar mid" style="width:70%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Excelente diversificação de portfólio (serviço de alto valor). Enquadramento mostra bem a tensão e cobertura sobre a água.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Fotografar em dia ensolarado com piscina limpa, sem equipamentos de manutenção no fundo. Cores se destacariam muito mais.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Vista pela Janela (Árvores)</div>
+                <div class="photo-score low">2/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar low" style="width:20%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">A rede é tão invisível que a foto perdeu o propósito comercial. Parece uma foto aleatória de apartamento — confunde o cliente.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Incluir uma mão tocando a rede em primeiro plano para dar contexto ao que se está olhando. Sem isso, a foto não comunica nada.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Instalador com Mão na Rede</div>
+                <div class="photo-score mid">5/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar mid" style="width:50%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Boa intenção tática — simula "equipe em ação". Porém o contra-luz severo transformou o braço em uma silhueta escura. Sem uniforme visível.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Iluminar o instalador com uniforme limpo e logotipo no ombro. Isso transmite profissionalismo e valida a marca.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Detalhe Perfil Tela Preta</div>
+                <div class="photo-score high">8/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar high" style="width:80%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Excelente qualidade técnica. Foco nítido na estrutura preta, bom contraste com o verde das árvores ao fundo. Transmite alta qualidade de acabamento.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Quase nenhuma. É uma das melhores fotos técnicas do portfólio. Manter e produzir mais nesse estilo.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">⚠️ Sacada com Logo Gigante</div>
+                <div class="photo-score low">2/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar low" style="width:20%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis"><strong>Violação direta das diretrizes Google 2026.</strong> Logotipo flutuante cobre ~30% da imagem — classificado como "conteúdo promocional obstrutivo". Risco de rejeição ou queda no ranking.</div>
+                <div class="photo-improvement"><strong>Ação imediata:</strong> Remover esta foto da ficha. O logo deve estar no uniforme da equipe, nunca sobreposto na imagem.</div>
+            </div>
+        </div>
+
+        <div class="photo-card">
+            <div class="photo-header">
+                <div class="photo-name">Tela Mosquiteira de Correr</div>
+                <div class="photo-score mid">6/10</div>
+            </div>
+            <div class="score-bar-wrap"><div class="score-bar mid" style="width:60%"></div></div>
+            <div class="photo-body">
+                <div class="photo-diagnosis">Diversificação valiosa do portfólio. Trilho e acabamento parecem limpos. Útil para quem busca especificamente telas mosquiteiras.</div>
+                <div class="photo-improvement"><strong>Melhoria:</strong> Dar dois passos para trás e mostrar a porta inteira integrada ao ambiente — noção de escala e estética.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RESUMO -->
+    <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div>
+            <div class="section-title">Resumo da Análise</div>
+            <div class="section-desc">Pontos fortes e críticas técnicas consolidadas</div>
+        </div>
+    </div>
+
+    <div class="analysis-grid">
+        <div class="analysis-box green-box">
+            <div class="analysis-box-title">✓ Pontos Fortes</div>
+            <ul class="analysis-list">
+                <li><strong>100% Autêntico:</strong> Zero stock photos. Fotos reais geram confiança máxima no algoritmo de 2026.</li>
+                <li><strong>Apelo Emocional:</strong> Foto do gatinho acerta diretamente na maior dor do público-alvo (proteção de pets).</li>
+                <li><strong>Variedade de Serviços:</strong> Cobre redes de janela, sacada, piscina e telas mosquiteiras.</li>
+                <li><strong>Foto Técnica de Destaque:</strong> Detalhe do perfil de tela preta está em nível profissional.</li>
+            </ul>
+        </div>
+        <div class="analysis-box red-box">
+            <div class="analysis-box-title">✗ Críticas Técnicas</div>
+            <ul class="analysis-list">
+                <li><strong>Iluminação Crítica:</strong> Quase todas as fotos sofrem com contra-luz — silhuetas escuras contra janelas claras.</li>
+                <li><strong>Sem Branding Humano:</strong> Nenhum técnico uniformizado, nenhum veículo com logo, zero humanização da marca.</li>
+                <li><strong>Resolução Baixa:</strong> Fotos enviadas via WhatsApp ou aparelhos antigos. Precisam de retomada profissional.</li>
+                <li><strong>Enquadramentos Pobres:</strong> Carros cortados, dedos na lente, objetos pessoais no frame (cinzeiro, bagunça).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- PLANO DE CAPTURA -->
+    <div class="section-header">
+        <div class="section-icon">🎯</div>
+        <div>
+            <div class="section-title">Plano de Captura Estratégico</div>
+            <div class="section-desc">O que fotografar para dominar o ranking local de Samambaia e Brasília</div>
+        </div>
+    </div>
+
+    <div class="capture-plan">
+        <div class="capture-plan-header">
+            <h3>5 Sessões Fotográficas para Dominar o Nicho em 2026</h3>
+            <p>Execute nessa ordem de prioridade para maximizar o impacto no Google Maps</p>
+        </div>
+        <div class="capture-items">
+            <div class="capture-item">
+                <div class="capture-num">1</div>
+                <div class="capture-text">
+                    <div class="capture-title">🐱 A Foto Heroína — Pet + Segurança</div>
+                    <div class="capture-desc">Foto profissional de um gato ou cachorro pequeno olhando pela janela/sacada com a rede perfeitamente esticada e nítida ao fundo. Iluminação natural no período da manhã. O que você vende não é corda e gancho — é <strong>paz de espírito</strong>.</div>
+                </div>
+            </div>
+            <div class="capture-item">
+                <div class="capture-num">2</div>
+                <div class="capture-text">
+                    <div class="capture-title">👷 Equipe em Ação com Uniforme</div>
+                    <div class="capture-desc">Técnico uniformizado com EPI de segurança (cinto, capacete se aplicável) tensionando a rede em uma janela ou sacada. Uniforme com logo visível no ombro. Transmite segurança jurídica e profissionalismo imediatamente.</div>
+                </div>
+            </div>
+            <div class="capture-item">
+                <div class="capture-num">3</div>
+                <div class="capture-text">
+                    <div class="capture-title">🔄 Antes e Depois (Storytelling Visual)</div>
+                    <div class="capture-desc">Duas fotos tiradas do mesmo ângulo exato. Foto 1: Janela aberta sem proteção (sensação de perigo implícita). Foto 2: Janela com rede instalada de forma discreta e elegante. O contraste vende sozinho.</div>
+                </div>
+            </div>
+            <div class="capture-item">
+                <div class="capture-num">4</div>
+                <div class="capture-text">
+                    <div class="capture-title">🔬 Macro de Acabamento Premium</div>
+                    <div class="capture-desc">Fotos close-up dos ganchos de inox com tratamento antiferrugem e dos nós de corda de polietileno de alta resistência. Isso justifica preços mais altos frente à concorrência barata e gera percepção de valor imediata.</div>
+                </div>
+            </div>
+            <div class="capture-item">
+                <div class="capture-num">5</div>
+                <div class="capture-text">
+                    <div class="capture-title">🚗 Frota Envelopada no Cliente</div>
+                    <div class="capture-desc">Foto do veículo da empresa (envelopado com a logo) estacionado em frente a um condomínio de alto padrão onde o serviço foi realizado. Isso gera autoridade local instantânea e sinaliza que a BSB atende bem toda a região.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <div class="footer-brand">Análise gerada por <strong>Kelevra Corp</strong> · Motor de IA: Gemini Vision</div>
+    <div class="footer-note">26/05/2026 · 23 fotos analisadas · Confidencial</div>
+</div>
+
+<script>
+    // Animate score bars on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const bars = document.querySelectorAll('.score-bar');
+        bars.forEach(bar => {
+            const w = bar.style.width;
+            bar.style.width = '0';
+            setTimeout(() => { bar.style.width = w; }, 200);
+        });
+    });
+</script>
+
+</body>
+</html>
