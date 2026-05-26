@@ -28,11 +28,15 @@ export async function executarAuditoria360Completa(businessName, dataId = null, 
         let totalFotos = 0;
         let photosUrls = [];
 
-        if (dataId) {
-            log(`📸 Buscando galeria completa via data_id...`);
-            photosUrls = await buscarFotosPorDataId(dataId);
-        } else if (empresaSerp.photos && empresaSerp.photos.length > 0) {
-            log(`📸 data_id ausente. Usando fotos da vitrine geral...`);
+        let dataIdToUse = dataId || empresaSerp.data_id;
+
+        if (dataIdToUse) {
+            log(`📸 Buscando galeria completa via data_id (${dataIdToUse})...`);
+            photosUrls = await buscarFotosPorDataId(dataIdToUse);
+        }
+        
+        if (photosUrls.length === 0 && empresaSerp.photos && empresaSerp.photos.length > 0) {
+            log(`📸 Fotos da galeria não encontradas. Usando fotos da vitrine geral...`);
             photosUrls = empresaSerp.photos.map(p => p.image || p.link).filter(Boolean);
         }
 
