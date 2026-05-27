@@ -27,6 +27,7 @@ process.on('uncaughtException', (err) => {
 // PASSO 2: Importar modulos externos de forma segura (nunca derrubam o servidor)
 let executarAuditoriaLote = async () => { throw new Error('Modulo batch_audit nao carregado'); };
 let gerarResposta = async () => { throw new Error('Modulo llm nao carregado'); };
+let buscarEmpresaNoMaps = async () => [];
 let listarContas = async () => [];
 let listarLocais = async () => [];
 
@@ -44,6 +45,14 @@ try {
     console.log('[OK] llm.js carregado.');
 } catch(e) {
     console.error('[AVISO] llm.js falhou ao carregar:', e.message);
+}
+
+try {
+    const serpMod = await import('./api_serp.js');
+    buscarEmpresaNoMaps = serpMod.buscarEmpresaNoMaps;
+    console.log('[OK] api_serp.js carregado.');
+} catch(e) {
+    console.error('[AVISO] api_serp.js falhou ao carregar:', e.message);
 }
 
 try {
@@ -308,6 +317,68 @@ app.post('/api/debora', async (req, res) => {
     } catch (error) {
         console.error("Erro no endpoint da Débora:", error);
         res.status(500).json({ error: "A Débora teve um probleminha técnico para responder." });
+    }
+});
+
+// Endpoint do Diagnóstico de Invisibilidade (Isca Digital de Vendas)
+app.post('/api/invisibilidade', async (req, res) => {
+    try {
+        const { term, location } = req.body;
+        if (!term) {
+            return res.status(400).json({ error: "Por favor, digite o nome da empresa ou palavra-chave." });
+        }
+
+        console.log(`[Invisibilidade] Executando diagnóstico para: "${term}" em "${location || 'Distrito Federal'}"`);
+
+        // 1. Buscar a empresa no Google Maps via SerpApi
+        const resultados = await buscarEmpresaNoMaps(term, location);
+        if (!resultados || resultados.length === 0) {
+            return res.json({ 
+                reply: `### ❌ Empresa Não Encontrada\nNão conseguimos localizar a empresa **"${term}"** na região de **"${location || 'Brasília'}"** no Google Maps.\n\n**Como resolver?**\n- Verifique se a grafia do nome está correta.\n- Tente adicionar palavras-chave (ex: em vez de apenas "BSB", busque por "BSB Redes de Proteção").\n- Especifique a cidade ou bairro no campo de localização.` 
+            });
+        }
+
+        // Pega o resultado mais provável (o primeiro da lista)
+        const empresa = resultados[0];
+        
+        // 2. Montar o relatório de análise para o LLM
+        const contextAnalysis = `
+Nome da Empresa: ${empresa.title || 'Não informado'}
+Nota (Rating): ${empresa.rating || 'Sem avaliações'}
+Número de Avaliações: ${empresa.reviews || 0}
+Possui Website? ${empresa.website ? 'Sim (' + empresa.website + ')' : 'Não'}
+Telefone: ${empresa.phone || 'Não informado'}
+Endereço: ${empresa.address || 'Não informado'}
+Categoria GMB: ${empresa.type || 'Não informada'}
+ID do Google Maps: ${empresa.place_id || 'Não informado'}
+        `;
+
+        // 3. Prompt especializado para a Débora gerar o Diagnóstico
+        const INVISIBILIDADE_PROMPT = `
+Você é a Débora, a Estrategista Sênior de Reputação e SEO Local da Kelevra Corp.
+Analise os dados estruturados do Google Meu Negócio de uma empresa fornecidos abaixo e elabore um **"Diagnóstico de Invisibilidade"** comercial, rápido e altamente persuasivo.
+
+DADOS DA EMPRESA AUDITADA:
+${contextAnalysis}
+
+INSTRUÇÕES DO DIAGNÓSTICO:
+1. Tom de Voz: Profissional, assertivo, comercialmente persuasivo, mas ético. O objetivo é despertar no dono da empresa o desejo imediato de corrigir os problemas de visibilidade.
+2. Formato: Curto, visualmente escaneável, excelente para ser enviado pelo WhatsApp ou apresentado em uma ligação rápida de vendas.
+3. Seções Obrigatórias:
+   - **🎯 Veredito de Invisibilidade**: Uma nota de 0 a 100 de Saúde Digital e um status claro (ex: 🔴 Crítico, 🟡 Risco de Perda, 🟢 Potencial Oculto). Explique de forma muito simples a nota.
+   - **🚨 Os Gargalos Graves (O que está afastando clientes)**: Liste de 2 a 3 falhas que a IA ou os dados revelaram (ex: falta de site próprio, poucas avaliações, falta de resposta às críticas, etc.). Explique o impacto prático disso no dia a dia.
+   - **💸 O Impacto Financeiro (O Custo da Invisibilidade)**: Mostre o que a empresa está perdendo por não estar no Top 3 do Google Maps (quantos clientes estão preferindo concorrentes diretos que estão mais visíveis).
+   - **🔥 Chamada para Ação (CTA Irrecusável)**: Ofereça uma sessão de consultoria estratégica 360 ou o agendamento de uma varredura completa da concorrência gratuitamente pelo WhatsApp da agência.
+4. Linguagem: Didática e simples. Se usar termos técnicos de SEO Local ou algoritmo, faça analogias com vitrines de lojas ou localizações físicas.
+
+Elabore em formato Markdown refinado e profissional.
+`;
+
+        const reply = await gerarResposta(INVISIBILIDADE_PROMPT, "Você é a Débora, a Estrategista Sênior de Reputação e SEO Local da Kelevra Corp.");
+        res.json({ reply });
+    } catch (error) {
+        console.error("Erro no Diagnóstico de Invisibilidade:", error);
+        res.status(500).json({ error: "A Débora teve um probleminha técnico para gerar o diagnóstico." });
     }
 });
 

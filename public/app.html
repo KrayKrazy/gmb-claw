@@ -34,6 +34,9 @@
                 <button class="nav-item" data-tab="otimizador">
                     <span class="icon">🪄</span> Otimizador de Fichas
                 </button>
+                <button class="nav-item" data-tab="invisibilidade">
+                    <span class="icon">🔍</span> Diagnóstico de Invisibilidade
+                </button>
                 <button class="nav-item" data-tab="varredura">
                     <span class="icon">🛡️</span> Varredura Automática
                 </button>
@@ -83,6 +86,23 @@
                         <button id="btnSendOtimizador" class="btn-primary btn-large">Analisar Ficha com a Débora</button>
                         
                         <div id="otimizadorResult" class="result-box" style="display: none;"></div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: Diagnóstico de Invisibilidade -->
+                <section id="tab-invisibilidade" class="tab-content">
+                    <div class="otimizador-panel glass-panel">
+                        <div class="panel-header">
+                            <h2>Diagnóstico de Invisibilidade</h2>
+                            <p>Gere um relatório local rápido e comercialmente persuasivo sobre qualquer empresa para usar como gancho de fechamento de vendas.</p>
+                        </div>
+                        <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                            <input type="text" id="invisibilidadeTerm" class="auth-input" style="flex: 2; margin-bottom: 0;" placeholder="Nome da empresa ou palavra-chave (ex: BSB Redes de Proteção)" />
+                            <input type="text" id="invisibilidadeLoc" class="auth-input" style="flex: 1; margin-bottom: 0;" placeholder="Localização (ex: Brasília - DF)" />
+                            <button id="btnInvisibilidade" class="btn-primary" style="white-space: nowrap; padding: 14px 28px;">Gerar Diagnóstico</button>
+                        </div>
+                        
+                        <div id="invisibilidadeResult" class="result-box" style="display: none;"></div>
                     </div>
                 </section>
 

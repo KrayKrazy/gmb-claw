@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (tabId === 'otimizador') {
                 headerTitle.innerText = "Otimizador de Fichas";
                 headerDesc.innerText = "Cole os dados do cliente e receba um passo a passo organizado.";
+            } else if (tabId === 'invisibilidade') {
+                headerTitle.innerText = "Diagnóstico de Invisibilidade";
+                headerDesc.innerText = "Gere um laudo rápido e persuasivo para usar de gancho em ligações de vendas.";
             } else if (tabId === 'varredura') {
                 headerTitle.innerText = "Varredura Automática";
                 headerDesc.innerText = "Blindagem mensal do portfólio de clientes.";
@@ -200,6 +203,45 @@ document.addEventListener('DOMContentLoaded', () => {
         
         btnSendOtimizador.disabled = false;
         btnSendOtimizador.innerText = 'Analisar Novamente';
+    });
+
+    // === Diagnóstico de Invisibilidade Functionality ===
+    const btnInvisibilidade = document.getElementById('btnInvisibilidade');
+    const invisibilidadeTerm = document.getElementById('invisibilidadeTerm');
+    const invisibilidadeLoc = document.getElementById('invisibilidadeLoc');
+    const invisibilidadeResult = document.getElementById('invisibilidadeResult');
+
+    btnInvisibilidade.addEventListener('click', async () => {
+        const term = invisibilidadeTerm.value.trim();
+        const loc = invisibilidadeLoc.value.trim();
+        if (!term) return alert('Digite o nome da empresa ou palavra-chave!');
+
+        btnInvisibilidade.disabled = true;
+        btnInvisibilidade.innerText = 'Buscando e Gerando Laudo...';
+        invisibilidadeResult.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/invisibilidade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ term: term, location: loc })
+            });
+            const data = await response.json();
+            const reply = (data && data.reply) ? data.reply : '';
+
+            if (reply) {
+                invisibilidadeResult.innerHTML = parseMarkdown(reply);
+                invisibilidadeResult.style.display = 'block';
+            } else {
+                alert('Erro ao gerar laudo de invisibilidade.');
+            }
+        } catch (error) {
+            console.error('Erro invisibilidade:', error);
+            alert('Falha ao conectar ao servidor: ' + error.message);
+        } finally {
+            btnInvisibilidade.disabled = false;
+            btnInvisibilidade.innerText = 'Gerar Novo Diagnóstico';
+        }
     });
 
     // === Varredura Functionality ===
