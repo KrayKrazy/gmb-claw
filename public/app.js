@@ -210,6 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const invisibilidadeTerm = document.getElementById('invisibilidadeTerm');
     const invisibilidadeLoc = document.getElementById('invisibilidadeLoc');
     const invisibilidadeResult = document.getElementById('invisibilidadeResult');
+    const btnDownloadInvisibilidadeHtml = document.getElementById('btnDownloadInvisibilidadeHtml');
+    const invisibilidadeDownloadArea = document.getElementById('invisibilidadeDownloadArea');
+
+    let lastInvisibilidadeMarkdown = '';
+    let lastInvisibilidadeCompany = '';
 
     btnInvisibilidade.addEventListener('click', async () => {
         const term = invisibilidadeTerm.value.trim();
@@ -219,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btnInvisibilidade.disabled = true;
         btnInvisibilidade.innerText = 'Buscando e Gerando Laudo...';
         invisibilidadeResult.style.display = 'none';
+        invisibilidadeDownloadArea.style.display = 'none';
+        lastInvisibilidadeMarkdown = '';
+        lastInvisibilidadeCompany = '';
 
         try {
             const response = await fetch('/api/invisibilidade', {
@@ -230,8 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const reply = (data && data.reply) ? data.reply : '';
 
             if (reply) {
+                lastInvisibilidadeMarkdown = reply;
+                lastInvisibilidadeCompany = term;
                 invisibilidadeResult.innerHTML = parseMarkdown(reply);
                 invisibilidadeResult.style.display = 'block';
+                invisibilidadeDownloadArea.style.display = 'block';
             } else {
                 alert('Erro ao gerar laudo de invisibilidade.');
             }
@@ -242,6 +253,189 @@ document.addEventListener('DOMContentLoaded', () => {
             btnInvisibilidade.disabled = false;
             btnInvisibilidade.innerText = 'Gerar Novo Diagnóstico';
         }
+    });
+
+    btnDownloadInvisibilidadeHtml.addEventListener('click', () => {
+        if (!lastInvisibilidadeMarkdown) return alert('Gere um diagnóstico primeiro!');
+
+        const renderedContent = parseMarkdown(lastInvisibilidadeMarkdown);
+        
+        // Premium standalone HTML template with Kelevra Corp theme
+        const htmlTemplate = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Invisibilidade Local - ${lastInvisibilidadeCompany}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+        
+        :root {
+            --color-bg: #050507;
+            --color-bg-card: #0b0c10;
+            --color-bg-surface: #12121a;
+            --color-gold: #c9a84c;
+            --color-gold-light: #e8c96b;
+            --color-text: #e8e8f0;
+            --color-text-muted: #8888aa;
+            --color-border: rgba(201,168,76,0.18);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            padding: 60px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 30px;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            letter-spacing: -0.02em;
+        }
+        
+        .subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+        }
+        
+        .card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 50px 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            margin-bottom: 40px;
+            backdrop-filter: blur(12px);
+        }
+        
+        /* Markdown Renderer Styling */
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--color-gold);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        h1 { font-size: 2.2rem; border-bottom: 1px solid var(--color-border); padding-bottom: 12px; }
+        h2 { font-size: 1.8rem; }
+        h3 { font-size: 1.4rem; }
+        
+        p {
+            margin-bottom: 24px;
+            color: var(--color-text);
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+        
+        ul, ol {
+            margin-bottom: 24px;
+            padding-left: 24px;
+            color: var(--color-text);
+        }
+        
+        li {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+        
+        strong {
+            color: var(--color-gold-light);
+            font-weight: 600;
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--color-gold);
+            padding: 16px 24px;
+            background: rgba(201, 168, 76, 0.05);
+            margin-bottom: 24px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .footer {
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            margin-top: 80px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 40px;
+        }
+        
+        .footer a {
+            color: var(--color-gold);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .footer a:hover {
+            color: var(--color-gold-light);
+        }
+        
+        .text-gold-gradient {
+            background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">|Kelevra corp.</div>
+            <div class="subtitle">Laudo de Engenharia de Reputação</div>
+        </header>
+        
+        <div class="card">
+            ${renderedContent}
+        </div>
+        
+        <footer class="footer">
+            <p>Diagnóstico de Invisibilidade Local elaborado com exclusividade por <a href="https://wa.me/5561981849873" target="_blank">|Kelevra corp.</a></p>
+            <p style="margin-top: 8px; font-size: 0.8rem; color: #555566;">&copy; 2026. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+</body>
+</html>`;
+
+        // Trigger browser file download
+        const blob = new Blob([htmlTemplate], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const filenameSafe = lastInvisibilidadeCompany.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.href = url;
+        a.download = `Laudo_Invisibilidade_${filenameSafe}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     });
 
     // === Varredura Functionality ===
