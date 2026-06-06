@@ -23,6 +23,7 @@ Escolha uma opção:
 5. Auditoria Master 360 (CSV + Geogrid + Gap + Visual)
 6. Auditoria Master 360 LOTE (Portfólio Completo)
 7. Sair
+8. Extrair Insights do Google Search Console (GSC)
 -------------------------------------------
 Opção: `;
 
@@ -360,6 +361,64 @@ async function main() {
                     console.log("Saindo do GMB Claw. Até mais!");
                     rl.close();
                     process.exit(0);
+                }
+                else if (opcao === '8') {
+                    console.log("\n--- Extraindo Dados do Google Search Console ---");
+                    console.log("⚠️ Lembre-se de rodar 'node auth_gsc.js' primeiro!");
+                    try {
+                        const { listVerifiedSites, getSitePerformance } = await import('./api_gsc.js');
+                        const sites = await listVerifiedSites();
+                        if (sites.length === 0) {
+                            console.log("Nenhum site verificado encontrado no seu GSC.");
+                        } else {
+                            console.log(`✅ ${sites.length} propriedades encontradas! Puxando métricas dos últimos 30 dias...`);
+                            
+                            const endDate = new Date().toISOString().split('T')[0];
+                            const startDate = new Date();
+                            startDate.setDate(startDate.getDate() - 30);
+                            const startDateStr = startDate.toISOString().split('T')[0];
+                            
+                            let relatorio = [];
+                            for (const site of sites) {
+                                console.log(`\n🔍 Site: ${site.siteUrl}`);
+                                const perf = await getSitePerformance(site.siteUrl, startDateStr, endDate);
+                                
+                                let totalClicks = 0;
+                                let totalImpressions = 0;
+                                
+                                if (perf.length > 0) {
+                                    perf.forEach(row => {
+                                        totalClicks += row.clicks;
+                                        totalImpressions += row.impressions;
+                                    });
+                                    console.log(`   - Cliques: ${totalClicks}`);
+                                    console.log(`   - Impressões: ${totalImpressions}`);
+                                    console.log(`   - Top Query: ${perf[0].keys[0]} (Posição: ${perf[0].position.toFixed(1)})`);
+                                } else {
+                                    console.log(`   - Sem tráfego registrado nos últimos 30 dias.`);
+                                }
+                                
+                                relatorio.push({
+                                    Site: site.siteUrl,
+                                    Cliques: totalClicks,
+                                    Impressoes: totalImpressions
+                                });
+                            }
+                            
+                            const csvHeader = "Site,Cliques,Impressoes\n";
+                            const csvRows = relatorio.map(r => `${r.Site},${r.Cliques},${r.Impressoes}`).join('\n');
+                            const fs = await import('fs');
+                            const path = await import('path');
+                            const relatorioPath = path.join(process.cwd(), `GSC_Insights_${Date.now()}.csv`);
+                            fs.writeFileSync(relatorioPath, csvHeader + csvRows);
+                            console.log(`\n✅ Relatório GSC salvo em: ${relatorioPath}`);
+                        }
+                    } catch (err) {
+                        console.error("\\n❌ Erro ao extrair GSC:", err.message);
+                    }
+                    showMenu();
+                    return;
+                }
                 } else {
                     console.log("Opção inválida.");
                 }
