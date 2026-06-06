@@ -378,7 +378,7 @@ Elabore em formato Markdown refinado e profissional.
         res.json({ reply });
     } catch (error) {
         console.error("Erro no Diagnóstico de Invisibilidade:", error);
-        res.status(500).json({ error: "A Débora teve um probleminha técnico para gerar o diagnóstico." });
+        res.status(500).json({ error: "A Débora teve um probleminha técnico para gerar o diagnóstico. Erro: " + error.message });
     }
 });
 
