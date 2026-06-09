@@ -19,7 +19,7 @@ export async function gerarResposta(promptOrHistory, systemInstruction = '', ten
     
     // Suporte para string simples ou array de histórico
     const contents = Array.isArray(promptOrHistory) 
-        ? promptOrHistory 
+        ? promptOrHistory.filter(msg => msg.parts && msg.parts[0] && msg.parts[0].text && msg.parts[0].text.trim() !== '')
         : [{ role: 'user', parts: [{ text: promptOrHistory }] }];
 
     for (let i = 0; i < tentativas; i++) {
