@@ -138,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 let finalReply = rawReply;
                 
+                if (!finalReply) {
+                    throw new Error("Resposta vazia da Débora (Erro no servidor ou limite de requisições)");
+                }
+
                 // Extrair Tarefas
                 const taskRegex = /<ADD_TASK>(.*?)<\/ADD_TASK>/gs;
                 let match;
@@ -161,6 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Erro sendMessage:', error);
             if (!isOtimizador) alert('Erro de conexão com a Débora: ' + error.message);
+            
+            // Remove a mensagem do usuário do histórico se a IA falhou, para que ele possa tentar novamente
+            if (!isOtimizador && chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                chatHistory.pop();
+                safeSetStorage('deboraChatHistory', chatHistory);
+            }
         } finally {
             if (!isOtimizador) {
                 chatTyping.style.display = 'none';
