@@ -11,6 +11,8 @@ dotenv.config({ path: join(__dirname, '.env.gemini'), override: true });
 
 export const config = {
     geminiApiKey: process.env.GEMINI_API_KEY || '',
+    groqApiKey: process.env.GROQ_API_KEY || '',
+    openaiApiKey: process.env.OPENAI_API_KEY || '',
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     agentLanguage: process.env.AGENT_LANGUAGE || 'pt-BR',

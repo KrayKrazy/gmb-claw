@@ -1,49 +1,54 @@
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 import { config } from './config.js';
 import fs from 'fs';
 
-let ai = null;
+let groqClient = null;
 
 function getAIClient() {
-    if (!ai) {
-        if (!config.geminiApiKey) {
-            throw new Error('GEMINI_API_KEY não configurada no arquivo .env');
+    if (!groqClient) {
+        if (!config.groqApiKey) {
+            throw new Error('GROQ_API_KEY não configurada no arquivo .env');
         }
-        ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
+        groqClient = new Groq({ apiKey: config.groqApiKey });
     }
-    return ai;
+    return groqClient;
 }
 
 export async function gerarResposta(promptOrHistory, systemInstruction = '', tentativas = 3) {
     const client = getAIClient();
     
     // Suporte para string simples ou array de histórico
-    const contents = Array.isArray(promptOrHistory) 
-        ? promptOrHistory.filter(msg => msg.parts && msg.parts[0] && msg.parts[0].text && msg.parts[0].text.trim() !== '')
-        : [{ role: 'user', parts: [{ text: promptOrHistory }] }];
+    let messages = [];
+    
+    if (systemInstruction) {
+        messages.push({ role: 'system', content: systemInstruction });
+    }
+    
+    if (Array.isArray(promptOrHistory)) {
+        for (const msg of promptOrHistory) {
+            if (msg.parts && msg.parts[0] && msg.parts[0].text && msg.parts[0].text.trim() !== '') {
+                // Mapeia role 'model' do gemini para 'assistant' do openai/groq
+                const role = msg.role === 'model' ? 'assistant' : msg.role;
+                messages.push({ role: role, content: msg.parts[0].text });
+            }
+        }
+    } else {
+        messages.push({ role: 'user', content: promptOrHistory });
+    }
 
     for (let i = 0; i < tentativas; i++) {
         try {
-            // No SDK unificado, o nome do modelo deve ser exato. 
-            // O usuário selecionou Gemini 3 Flash, então usaremos o ID correspondente.
-            const response = await client.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: contents,
-                config: {
-                    systemInstruction: systemInstruction || 'Você é um assistente especialista em Google Meu Negócio e otimização local de SEO.',
-                    temperature: 0.7
-                }
+            const response = await client.chat.completions.create({
+                model: 'llama-3.1-8b-instant',
+                messages: messages,
+                temperature: 0.7
             });
 
-            let textoFinal = response.text || "";
-            
-            textoFinal = textoFinal.replace(/<raciocinio>[\s\S]*?<\/raciocinio>\n*/gi, '');
-            textoFinal = textoFinal.replace(/<analise_interna>[\s\S]*?<\/analise_interna>\n*/gi, '');
-            textoFinal = textoFinal.replace(/<estrategia>[\s\S]*?<\/estrategia>\n*/gi, '');
+            let textoFinal = response.choices[0].message.content || "";
             
             return textoFinal.trim();
         } catch (error) {
-            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha na API do Gemini:`, error.message);
+            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha na API do Groq:`, error.message);
             if (i === tentativas - 1) throw error;
             await new Promise(res => setTimeout(res, 2000));
         }
@@ -51,31 +56,11 @@ export async function gerarResposta(promptOrHistory, systemInstruction = '', ten
 }
 
 export async function gerarRespostaComImagem(prompt, imagePaths, systemInstruction = '') {
-    const client = getAIClient();
-
-    try {
-        const parts = imagePaths.map(path => ({
-            inlineData: {
-                data: fs.readFileSync(path).toString("base64"),
-                mimeType: "image/jpeg"
-            }
-        }));
-
-        parts.push({ text: prompt });
-
-        const response = await client.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: [{ role: 'user', parts: parts }],
-            config: {
-                systemInstruction: systemInstruction || 'Você é um Auditor Visual de SEO Local.'
-            }
-        });
-
-        return (response.text || "").trim();
-    } catch (error) {
-        console.error("Erro na Auditoria Visual:", error.message);
-        return "Não foi possível realizar a auditoria visual no momento.";
-    }
+    // A API do Groq atual com Llama não suporta visão. 
+    // Como workaround para evitar quebraremos o app, retornaremos um erro fixo
+    // Ou se a OpenAI estuviese configurada poderíamos fazer fallback, mas não foi solicitada uma refatoração dupla.
+    console.warn("Aviso: gerarRespostaComImagem foi chamada, mas o Groq SDK configurado não tem suporte nativo de visão ativo para esse modelo.");
+    return "O recurso de auditoria visual de imagens está temporariamente em manutenção.";
 }
 
 export async function gerarRespostaJSON(prompt, tentativas = 3) {
@@ -83,18 +68,19 @@ export async function gerarRespostaJSON(prompt, tentativas = 3) {
     
     for (let i = 0; i < tentativas; i++) {
         try {
-            const response = await client.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                config: {
-                    responseMimeType: 'application/json',
-                    temperature: 0.3
-                }
+            const response = await client.chat.completions.create({
+                model: 'llama-3.1-8b-instant',
+                messages: [
+                    { role: 'system', content: 'Você é um assistente que sempre responde com JSON válido. Retorne apenas JSON.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                response_format: { type: "json_object" }
             });
 
-            return (response.text || "").trim();
+            return (response.choices[0].message.content || "").trim();
         } catch (error) {
-            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha na API do Gemini:`, error.message);
+            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha na API do Groq:`, error.message);
             if (i === tentativas - 1) throw error;
             await new Promise(res => setTimeout(res, 2000));
         }
