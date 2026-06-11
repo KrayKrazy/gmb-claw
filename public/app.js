@@ -220,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const invisibilidadeTerm = document.getElementById('invisibilidadeTerm');
     const invisibilidadeLoc = document.getElementById('invisibilidadeLoc');
     const invisibilidadeResult = document.getElementById('invisibilidadeResult');
+    const invisibilidadeDownloadArea = document.getElementById('invisibilidadeDownloadArea');
+    const btnDownloadInvisibilidadeHtml = document.getElementById('btnDownloadInvisibilidadeHtml');
 
     let lastInvisibilidadeMarkdown = '';
     let lastInvisibilidadeCompany = '';
@@ -249,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastInvisibilidadeCompany = term;
                 invisibilidadeResult.innerHTML = parseMarkdown(reply);
                 invisibilidadeResult.style.display = 'block';
+                invisibilidadeDownloadArea.style.display = 'block';
             } else {
                 alert('Erro ao gerar laudo de invisibilidade.');
             }
@@ -259,6 +262,164 @@ document.addEventListener('DOMContentLoaded', () => {
             btnInvisibilidade.disabled = false;
             btnInvisibilidade.innerText = 'Gerar Novo Diagnóstico';
         }
+    });
+
+    // === Download do Laudo Kelevra em HTML Premium ===
+    btnDownloadInvisibilidadeHtml.addEventListener('click', () => {
+        if (!lastInvisibilidadeMarkdown) return alert('Gere um diagnóstico primeiro!');
+
+        const safeTitle = lastInvisibilidadeCompany.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const renderedContent = parseMarkdown(lastInvisibilidadeMarkdown);
+        const dataAtual = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        const htmlTemplate = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Invisibilidade Local – ${lastInvisibilidadeCompany} | Kelevra Corp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060608;
+    --bg-card: #0d0d14;
+    --bg-surface: #13131e;
+    --gold: #c9a84c;
+    --gold-light: #e8c96b;
+    --gold-dim: rgba(201,168,76,0.15);
+    --text: #e8e8f0;
+    --text-muted: #888899;
+    --border: rgba(201,168,76,0.2);
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --green: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+    min-height: 100vh;
+  }
+  .watermark-bg {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-30deg);
+    font-family: 'Playfair Display', serif;
+    font-size: 10rem; font-weight: 900; color: rgba(201,168,76,0.03);
+    pointer-events: none; user-select: none; white-space: nowrap; z-index: 0;
+  }
+  .page { max-width: 820px; margin: 0 auto; padding: 60px 40px; position: relative; z-index: 1; }
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border); padding-bottom: 32px; margin-bottom: 40px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em;
+  }
+  .header-right { text-align: right; }
+  .report-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-muted); margin-bottom: 4px; }
+  .report-date { font-size: 0.85rem; color: var(--gold); font-weight: 600; }
+  /* Hero Banner */
+  .hero-banner {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-surface) 100%);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 40px; margin-bottom: 32px;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--gold); font-weight: 700; margin-bottom: 12px; }
+  .hero-company { font-size: 2rem; font-weight: 900; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+  .hero-sub { color: var(--text-muted); font-size: 0.95rem; }
+  /* Content card */
+  .content-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px; margin-bottom: 24px;
+  }
+  /* Markdown styles */
+  h1,h2,h3,h4 { font-family: 'Inter', sans-serif; color: var(--text); margin: 24px 0 12px; line-height: 1.3; }
+  h1 { font-size: 1.6rem; font-weight: 800; }
+  h2 { font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--gold); }
+  p { margin: 12px 0; color: var(--text); }
+  ul, ol { margin: 12px 0 12px 24px; }
+  li { margin: 6px 0; color: var(--text); }
+  strong { color: var(--gold-light); font-weight: 700; }
+  em { color: var(--text-muted); font-style: italic; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  code { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: var(--gold); }
+  blockquote {
+    border-left: 3px solid var(--gold); padding-left: 16px;
+    margin: 16px 0; color: var(--text-muted); font-style: italic;
+  }
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border); padding-top: 32px; margin-top: 48px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); }
+  .footer-text { font-size: 0.75rem; color: var(--text-muted); text-align: right; line-height: 1.5; }
+  .confidential {
+    display: inline-block; margin-top: 16px;
+    background: var(--gold-dim); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 14px;
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); font-weight: 700;
+  }
+  @media print {
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .watermark-bg { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="watermark-bg">KELEVRA</div>
+<div class="page">
+  <div class="header">
+    <div class="logo">KELEVRA CORP.</div>
+    <div class="header-right">
+      <div class="report-label">Diagnóstico Emitido em</div>
+      <div class="report-date">${dataAtual}</div>
+    </div>
+  </div>
+
+  <div class="hero-banner">
+    <div class="hero-label">🔍 Diagnóstico de Invisibilidade Local</div>
+    <div class="hero-company">${lastInvisibilidadeCompany}</div>
+    <div class="hero-sub">Análise estratégica de presença digital no Google Maps e SEO Local</div>
+    <div class="confidential">🔒 Documento Confidencial</div>
+  </div>
+
+  <div class="content-card">
+    ${renderedContent}
+  </div>
+
+  <div class="footer">
+    <div class="footer-logo">KELEVRA CORP.</div>
+    <div class="footer-text">
+      Engenharia de Reputação no Google<br>
+      © ${new Date().getFullYear()} Kelevra Corp. Todos os direitos reservados.
+    </div>
+  </div>
+</div>
+</body>
+</html>`;
+
+        const blob = new Blob([htmlTemplate], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Kelevra_Diagnostico_${safeTitle}.html`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
 
 
