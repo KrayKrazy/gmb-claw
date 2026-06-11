@@ -316,7 +316,7 @@ app.post('/api/debora', async (req, res) => {
         res.json({ reply });
     } catch (error) {
         console.error("Erro no endpoint da Débora:", error);
-        res.status(500).json({ error: "A Débora teve um probleminha técnico para responder." });
+        res.status(500).json({ error: "A Débora teve um probleminha técnico para responder.", details: error.message, stack: error.stack });
     }
 });
 
@@ -368,7 +368,6 @@ INSTRUÇÕES DO DIAGNÓSTICO:
    - **🎯 Veredito de Invisibilidade**: Uma nota de 0 a 100 de Saúde Digital e um status claro (ex: 🔴 Crítico, 🟡 Risco de Perda, 🟢 Potencial Oculto). Explique de forma muito simples a nota.
    - **🚨 Os Gargalos Graves (O que está afastando clientes)**: Liste de 2 a 3 falhas que a IA ou os dados revelaram (ex: falta de site próprio, poucas avaliações, falta de resposta às críticas, etc.). Explique o impacto prático disso no dia a dia.
    - **💸 O Impacto Financeiro (O Custo da Invisibilidade)**: Mostre o que a empresa está perdendo por não estar no Top 3 do Google Maps (quantos clientes estão preferindo concorrentes diretos que estão mais visíveis).
-   - **🔥 Chamada para Ação (CTA Irrecusável)**: Ofereça uma sessão de consultoria estratégica 360 ou o agendamento de uma varredura completa da concorrência gratuitamente pelo WhatsApp da agência.
 4. Linguagem: Didática e simples. Se usar termos técnicos de SEO Local ou algoritmo, faça analogias com vitrines de lojas ou localizações físicas.
 
 Elabore em formato Markdown refinado e profissional.
