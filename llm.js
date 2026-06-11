@@ -1,77 +1,93 @@
-import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 import { config } from './config.js';
 
-let openaiClient = null;
+let client = null;
 
 function getAIClient() {
-    if (!openaiClient) {
-        // Obfuscating key to prevent GitHub secret scanner from blocking push
-        const key = config.openaiApiKey || ('sk-proj-' + '0aOpG9_gfofyE_27GWCk_kNkGH4dAz-9DNcZSKoIsI08Ef6ldEhmsQCwNKxuJswsLM71u4HvywT3BlbkFJbxauiMjl3rfYcuM7qyb0W6Xol_eOcPwv5qPpIUuvkfe2a5bAu2QwIY40bhmgHyDBJsXyizvxkA');
-        openaiClient = new OpenAI({ apiKey: key });
+    if (!client) {
+        const key = config.groqApiKey;
+        if (!key) throw new Error('GROQ_API_KEY não configurada');
+        client = new Groq({ apiKey: key });
     }
-    return openaiClient;
+    return client;
 }
 
+// Usa o modelo mais leve da Groq para evitar timeout e rate limit
+const MODEL = 'llama-3.1-8b-instant';
+
 export async function gerarResposta(promptOrHistory, systemInstruction = '', tentativas = 3) {
-    const client = getAIClient();
+    const ai = getAIClient();
     let messages = [];
-    
+
     if (systemInstruction) {
         messages.push({ role: 'system', content: systemInstruction });
     }
-    
+
     if (Array.isArray(promptOrHistory)) {
         for (const msg of promptOrHistory) {
-            if (msg.parts && msg.parts[0] && msg.parts[0].text && msg.parts[0].text.trim() !== '') {
-                const role = msg.role === 'model' ? 'assistant' : msg.role;
-                messages.push({ role: role, content: msg.parts[0].text });
+            let content = '';
+            if (msg.parts && msg.parts[0] && msg.parts[0].text) {
+                content = msg.parts[0].text;
             } else if (msg.content) {
-                const role = msg.role === 'model' ? 'assistant' : msg.role;
-                messages.push({ role: role, content: msg.content });
+                content = msg.content;
             }
+            if (content.trim() === '') continue;
+            const role = msg.role === 'model' ? 'assistant' : msg.role;
+            messages.push({ role, content });
         }
     } else {
-        messages.push({ role: 'user', content: promptOrHistory });
+        messages.push({ role: 'user', content: String(promptOrHistory) });
     }
+
+    // Limitar histórico a últimas 10 mensagens para não estourar tokens
+    const systemMsg = messages.find(m => m.role === 'system');
+    const otherMsgs = messages.filter(m => m.role !== 'system');
+    const trimmed = otherMsgs.slice(-10);
+    messages = systemMsg ? [systemMsg, ...trimmed] : trimmed;
 
     for (let i = 0; i < tentativas; i++) {
         try {
-            const response = await client.chat.completions.create({
-                model: 'gpt-4o-mini',
-                messages: messages,
-                temperature: 0.7
+            const response = await ai.chat.completions.create({
+                model: MODEL,
+                messages,
+                temperature: 0.7,
+                max_tokens: 2048
             });
-            return (response.choices[0].message.content || "").trim();
+            const text = response.choices?.[0]?.message?.content || '';
+            if (!text.trim()) throw new Error('Resposta vazia do modelo');
+            return text.trim();
         } catch (error) {
-            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha na API da OpenAI:`, error.message);
+            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha no Groq:`, error.message);
             if (i === tentativas - 1) throw error;
-            await new Promise(res => setTimeout(res, 2000));
+            await new Promise(res => setTimeout(res, 3000 * (i + 1)));
         }
     }
 }
 
 export async function gerarRespostaComImagem(prompt, imagePaths, systemInstruction = '') {
-    return "O recurso de auditoria visual de imagens está temporariamente em manutenção.";
+    return 'O recurso de auditoria visual de imagens está temporariamente em manutenção.';
 }
 
 export async function gerarRespostaJSON(prompt, tentativas = 3) {
-    const client = getAIClient();
+    const ai = getAIClient();
     for (let i = 0; i < tentativas; i++) {
         try {
-            const response = await client.chat.completions.create({
-                model: 'gpt-4o-mini',
+            const response = await ai.chat.completions.create({
+                model: MODEL,
                 messages: [
-                    { role: 'system', content: 'Você é um assistente que sempre responde com JSON válido. Retorne apenas JSON.' },
+                    { role: 'system', content: 'Você é um assistente que sempre responde com JSON válido. Retorne APENAS o JSON, sem texto extra, sem markdown.' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.3,
-                response_format: { type: "json_object" }
+                max_tokens: 2048
             });
-            return (response.choices[0].message.content || "").trim();
+            const raw = (response.choices?.[0]?.message?.content || '').trim();
+            const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
+            return match[1].trim();
         } catch (error) {
-            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha na API da OpenAI:`, error.message);
+            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha no Groq:`, error.message);
             if (i === tentativas - 1) throw error;
-            await new Promise(res => setTimeout(res, 2000));
+            await new Promise(res => setTimeout(res, 3000 * (i + 1)));
         }
     }
 }
