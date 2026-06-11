@@ -39,7 +39,7 @@ export async function gerarResposta(promptOrHistory, systemInstruction = '', ten
     for (let i = 0; i < tentativas; i++) {
         try {
             const response = await client.chat.completions.create({
-                model: 'llama-3.1-8b-instant',
+                model: 'llama-3.3-70b-versatile',
                 messages: messages,
                 temperature: 0.7
             });
@@ -69,7 +69,7 @@ export async function gerarRespostaJSON(prompt, tentativas = 3) {
     for (let i = 0; i < tentativas; i++) {
         try {
             const response = await client.chat.completions.create({
-                model: 'llama-3.1-8b-instant',
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     { role: 'system', content: 'Você é um assistente que sempre responde com JSON válido. Retorne apenas JSON.' },
                     { role: 'user', content: prompt }
