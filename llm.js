@@ -1,65 +1,71 @@
-import Groq from 'groq-sdk';
 import { config } from './config.js';
 
-let client = null;
+const GEMINI_API_KEY = config.geminiApiKey;
+const MODEL = 'gemini-2.5-flash';
+const BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-function getAIClient() {
-    if (!client) {
-        const key = config.groqApiKey;
-        if (!key) throw new Error('GROQ_API_KEY não configurada');
-        client = new Groq({ apiKey: key });
+async function callGemini(contents, systemInstruction = '', temperature = 0.7, maxOutputTokens = 2048) {
+    const body = {
+        contents,
+        generationConfig: {
+            temperature,
+            maxOutputTokens
+        }
+    };
+    if (systemInstruction) {
+        body.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
-    return client;
+
+    const response = await fetch(BASE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Gemini API error ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!text.trim()) throw new Error('Resposta vazia do Gemini');
+    return text.trim();
 }
 
-// Usa o modelo mais leve da Groq para evitar timeout e rate limit
-const MODEL = 'llama-3.1-8b-instant';
-
 export async function gerarResposta(promptOrHistory, systemInstruction = '', tentativas = 3) {
-    const ai = getAIClient();
-    let messages = [];
-
-    if (systemInstruction) {
-        messages.push({ role: 'system', content: systemInstruction });
-    }
+    // Monta contents no formato Gemini: [{role, parts:[{text}]}]
+    let contents = [];
 
     if (Array.isArray(promptOrHistory)) {
         for (const msg of promptOrHistory) {
-            let content = '';
+            let text = '';
             if (msg.parts && msg.parts[0] && msg.parts[0].text) {
-                content = msg.parts[0].text;
+                text = msg.parts[0].text;
             } else if (msg.content) {
-                content = msg.content;
+                text = msg.content;
             }
-            if (content.trim() === '') continue;
-            const role = msg.role === 'model' ? 'assistant' : msg.role;
-            messages.push({ role, content });
+            if (!text.trim()) continue;
+            const role = (msg.role === 'assistant') ? 'model' : (msg.role === 'model' ? 'model' : 'user');
+            contents.push({ role, parts: [{ text }] });
         }
     } else {
-        messages.push({ role: 'user', content: String(promptOrHistory) });
+        contents.push({ role: 'user', parts: [{ text: String(promptOrHistory) }] });
     }
 
-    // Limitar histórico a últimas 10 mensagens para não estourar tokens
-    const systemMsg = messages.find(m => m.role === 'system');
-    const otherMsgs = messages.filter(m => m.role !== 'system');
-    const trimmed = otherMsgs.slice(-10);
-    messages = systemMsg ? [systemMsg, ...trimmed] : trimmed;
+    // O Gemini exige que a última mensagem seja do usuário
+    if (!contents.length || contents[contents.length - 1].role !== 'user') return '';
+
+    // Limitar a 20 mensagens para não estourar tokens
+    contents = contents.slice(-20);
 
     for (let i = 0; i < tentativas; i++) {
         try {
-            const response = await ai.chat.completions.create({
-                model: MODEL,
-                messages,
-                temperature: 0.7,
-                max_tokens: 2048
-            });
-            const text = response.choices?.[0]?.message?.content || '';
-            if (!text.trim()) throw new Error('Resposta vazia do modelo');
-            return text.trim();
+            return await callGemini(contents, systemInstruction, 0.7, 2048);
         } catch (error) {
-            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha no Groq:`, error.message);
+            console.error(`[Tentativa ${i + 1}/${tentativas}] Falha no Gemini:`, error.message);
             if (i === tentativas - 1) throw error;
-            await new Promise(res => setTimeout(res, 3000 * (i + 1)));
+            await new Promise(res => setTimeout(res, 2000 * (i + 1)));
         }
     }
 }
@@ -69,25 +75,19 @@ export async function gerarRespostaComImagem(prompt, imagePaths, systemInstructi
 }
 
 export async function gerarRespostaJSON(prompt, tentativas = 3) {
-    const ai = getAIClient();
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    const system = 'Você é um assistente que sempre responde com JSON válido. Retorne APENAS o JSON, sem texto extra, sem markdown, sem blocos de código.';
+
     for (let i = 0; i < tentativas; i++) {
         try {
-            const response = await ai.chat.completions.create({
-                model: MODEL,
-                messages: [
-                    { role: 'system', content: 'Você é um assistente que sempre responde com JSON válido. Retorne APENAS o JSON, sem texto extra, sem markdown.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.3,
-                max_tokens: 2048
-            });
-            const raw = (response.choices?.[0]?.message?.content || '').trim();
+            const raw = await callGemini(contents, system, 0.3, 2048);
+            // Extrai JSON mesmo que venha com markdown
             const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
             return match[1].trim();
         } catch (error) {
-            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha no Groq:`, error.message);
+            console.error(`[JSON Tentativa ${i + 1}/${tentativas}] Falha no Gemini:`, error.message);
             if (i === tentativas - 1) throw error;
-            await new Promise(res => setTimeout(res, 3000 * (i + 1)));
+            await new Promise(res => setTimeout(res, 2000 * (i + 1)));
         }
     }
 }
