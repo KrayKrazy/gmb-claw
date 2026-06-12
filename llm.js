@@ -4,7 +4,7 @@ const GEMINI_API_KEY = config.geminiApiKey;
 const MODEL = 'gemini-2.5-flash';
 const BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-async function callGemini(contents, systemInstruction = '', temperature = 0.7, maxOutputTokens = 2048) {
+async function callGemini(contents, systemInstruction = '', temperature = 0.7, maxOutputTokens = 8192) {
     const body = {
         contents,
         generationConfig: {
@@ -61,7 +61,7 @@ export async function gerarResposta(promptOrHistory, systemInstruction = '', ten
 
     for (let i = 0; i < tentativas; i++) {
         try {
-            return await callGemini(contents, systemInstruction, 0.7, 2048);
+            return await callGemini(contents, systemInstruction, 0.7, 8192);
         } catch (error) {
             console.error(`[Tentativa ${i + 1}/${tentativas}] Falha no Gemini:`, error.message);
             if (i === tentativas - 1) throw error;
@@ -80,7 +80,7 @@ export async function gerarRespostaJSON(prompt, tentativas = 3) {
 
     for (let i = 0; i < tentativas; i++) {
         try {
-            const raw = await callGemini(contents, system, 0.3, 2048);
+            const raw = await callGemini(contents, system, 0.3, 8192);
             // Extrai JSON mesmo que venha com markdown
             const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
             return match[1].trim();
